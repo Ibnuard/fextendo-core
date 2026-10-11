@@ -4,12 +4,23 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'tools'))
 import release_ci as ci
 
 
 class ReleaseGuards(unittest.TestCase):
+    def test_draft_is_found_by_authenticated_release_listing(self):
+        draft = {'id': 123, 'tag_name': 'v1.1.0', 'draft': True}
+        with patch.object(ci, 'api', side_effect=[None, [draft]]) as api:
+            self.assertEqual(ci.find_release('v1.1.0'), draft)
+            self.assertEqual(api.call_args_list[1].args[0], 'releases?per_page=100&page=1')
+
+    def test_missing_release_is_not_confused_with_a_draft(self):
+        with patch.object(ci, 'api', side_effect=[None, []]):
+            self.assertIsNone(ci.find_release('v1.1.0'))
+
     def test_versions_and_pinned_bundle(self):
         self.assertEqual(ci.metadata()['version'], ci.release.VERSION)
 

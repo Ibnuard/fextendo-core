@@ -111,12 +111,29 @@ def api(path, missing=False):
     return json.loads(run.stdout)
 
 
+def find_release(tag):
+    # GitHub's by-tag endpoint does not expose a newly created draft.
+    published = api('releases/tags/'+tag, missing=True)
+    if published is not None:
+        return published
+    page = 1
+    while True:
+        releases = api(f'releases?per_page=100&page={page}')
+        matches = [item for item in releases if item['tag_name'] == tag]
+        require(len(matches) <= 1, 'Ambiguous draft release tag.')
+        if matches:
+            return matches[0]
+        if len(releases) < 100:
+            return None
+        page += 1
+
+
 def publish(directory):
     require(os.environ.get('GH_REPO') == REPOSITORY, 'Publishing requires the official GH_REPO.')
     require(os.environ.get('GITHUB_REF') == 'refs/heads/main', 'Only main may publish.')
     meta, assets, head = verify(directory)
     tag = meta['tag']
-    remote = api('releases/tags/'+tag, missing=True)
+    remote = find_release(tag)
     if remote and not remote['draft']:
         # A later docs/maintenance commit can build without replacing released binaries.
         print(f'{tag} is already published. Increase the app version to publish new assets; existing release unchanged.')
@@ -145,9 +162,13 @@ def publish(directory):
         existing_tag = api('git/ref/tags/'+tag, missing=True)
         if existing_tag:
             require(api('commits/'+tag)['sha'] == head, 'Existing tag points to another commit.')
-        gh('release', 'create', tag, '--repo', REPOSITORY, '--target', head,
-           '--draft', '--title', 'FEXTendo Patch '+tag, '--notes-file', str(notes))
-        remote = api('releases/tags/'+tag)
+        request = {'tag_name': tag, 'target_commitish': head, 'draft': True,
+                   'name': 'FEXTendo Patch '+tag, 'body': notes.read_text()}
+        created = subprocess.run(['gh', 'api', '--method', 'POST', f'repos/{REPOSITORY}/releases',
+                                  '--input', '-'], cwd=ROOT, input=json.dumps(request),
+                                 text=True, capture_output=True, check=True)
+        remote = json.loads(created.stdout)
+    endpoint = 'releases/'+str(remote['id'])
     if api('git/ref/tags/'+tag, missing=True):
         require(api('commits/'+tag)['sha'] == head, 'Draft tag points to another commit.')
     else:
@@ -161,7 +182,7 @@ def publish(directory):
     if missing:
         gh('release', 'upload', tag, *missing, '--repo', REPOSITORY)
     for attempt in range(3):
-        remote = api('releases/tags/'+tag)
+        remote = api(endpoint)
         try:
             verify_remote(remote, assets)
             break
@@ -170,7 +191,7 @@ def publish(directory):
                 raise
             time.sleep(3)
     gh('release', 'edit', tag, '--repo', REPOSITORY, '--draft=false', '--latest', '--notes-file', str(notes))
-    published = api('releases/tags/'+tag)
+    published = api(endpoint)
     require(not published['draft'] and not published['prerelease'], 'Release did not become public and stable.')
     require(api('commits/'+tag)['sha'] == head, 'Published tag points to another commit.')
     verify_remote(published, assets)

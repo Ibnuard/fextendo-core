@@ -54,6 +54,7 @@ jobs:
           persist-credentials: false
       - name: Prepare offline assets
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           apt-get update
           apt-get install -y python3-pil
           python3 tools/prepare.py

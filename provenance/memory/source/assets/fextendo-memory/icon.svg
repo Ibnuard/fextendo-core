@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="192" height="192" viewBox="0 0 192 192">
+  <title>FEXTendo Memory</title>
+  <rect x="8" y="8" width="176" height="176" rx="40" fill="#101c2c"/>
+  <rect x="9" y="9" width="174" height="174" rx="39" fill="none" stroke="#293b50" stroke-width="2"/>
+  <image x="30" y="35" width="132" height="88" preserveAspectRatio="xMidYMid meet" xlink:href="../fextendo-v2/gamepad-flat.png"/>
+  <image x="23" y="137" width="146" height="28" preserveAspectRatio="xMidYMid meet" xlink:href="../fextendo-v2/wordmark.png"/>
+</svg>

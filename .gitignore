@@ -1,0 +1,15 @@
+/build/
+/build-host/
+/dist/
+/*.elf
+/*.map
+/*.nacp
+/*.nro
+__pycache__/
+.DS_Store
+/.cache/
+/.venv/
+/local/
+*.keys
+.env
+.env.*

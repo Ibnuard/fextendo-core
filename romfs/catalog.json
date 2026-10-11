@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "application": "fextendo-patch",
+  "abi": "fxtmem-v1",
+  "min_app_version": "1.0.0",
+  "catalog_version": "1.1.0",
+  "bundles": [
+    {
+      "version": "1.1.0",
+      "atmosphere": "1.11.2",
+      "revision": "5388824b",
+      "hoc": "2.5.1",
+      "hoc_configuration": "official-release-default",
+      "tested_hos": "22.5.0",
+      "kernel": {
+        "asset": "mesosphere-1.11.2.bin",
+        "bytes": 679936,
+        "sha256": "29ac80dcc6b7c909243dac1f7b1272e4eeb44882410c8c8032f7b9671a5f1d26"
+      },
+      "loader": {
+        "asset": "loader-hoc-1.11.2-auto-v1.1.0.kip",
+        "bytes": 367708,
+        "sha256": "aead8e1451db65572f8ca7b0e9971fed6206031b8533126cc6e2f63deaf99eb7"
+      }
+    }
+  ]
+}

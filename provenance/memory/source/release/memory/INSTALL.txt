@@ -1,0 +1,51 @@
+FEXTendo Memory 1.0.0
+HOS reference 22.5.0 | Atmosphere 1.11.2 | HOC 2.5.1 official defaults
+
+PASANG
+1. Pastikan versi Atmosphere dan HOS sesuai. Gunakan Hekate/Nyx yang mendukung
+   HOS tersebut dan pastikan emuMMC sudah aktif.
+2. Salin ISI folder SD (atmosphere + bootloader) ke root microSD.
+3. Reboot ke Hekate > More configs > FEXTendo (emuMMC).
+4. Jalankan game dari forwarder HOME yang mendukung FEXTendo Memory ABI v1.
+
+Paket menambah satu entry boot, ikon dan boot logo yang sama dengan launcher FEXTendo.
+Setting HOC sama persis dengan default resmi 2.5.1. Profil sys-clk/hoc-clk
+yang sudah ada tetap berlaku; paket ini tidak mengatur clock saat bermain.
+Paket ini tidak menyertakan game, runtime Wine, forwarder atau tile probe.
+
+TAMPIL DI MENU UTAMA HEKATE (opsional)
+Di Nyx Settings, ubah Home Screen ke All configs jika ingin entry ini tampil
+bersama entry lain. Tidak perlu mengedit atau menimpa hekate_ipl.ini.
+Paket tidak mengubah pilihan autoboot atau waktu tunggu boot milik pengguna.
+
+CEK HASIL COPY (opsional, read-only)
+Jalankan PowerShell di folder paket:
+  .\Check-Package.ps1
+Untuk cek file yang sudah ada di SD, termasuk versi package3 dan emuMMC:
+  .\Check-Package.ps1 -SdRoot E:\
+Ganti E:\ dengan drive SD reader atau Hekate UMS. MTP tidak memakai drive letter.
+
+UPGRADE DARI PAKET TEST
+Entry baru bernama FEXTendo (emuMMC). Entry FEXTendo Memory v1 TEST tetap ada
+untuk rollback. Setelah entry baru sudah berhasil dipakai, dua path LAMA ini
+boleh dihapus secara manual:
+  bootloader/ini/fextendo-memory-v1.ini
+  atmosphere/fextendo-memory-v1/
+Tidak perlu menginstal ulang forwarder game yang sudah mendukung ABI v1.
+
+KEMBALI KE KONFIGURASI LAMA
+Reboot ke Hekate dan pilih entry CFW lama. Untuk menghapus paket baru, hapus
+hanya lima file yang tercantum di manifest.json dengan prefix SD/.
+hekate_ipl.ini, package3, exosphere.ini, hoc.kip asli, emuMMC dan save game
+tidak ditimpa oleh paket ini.
+
+BATAS KOMPATIBILITAS
+Kernel/loader identik dengan pasangan yang lulus CONTROL + OPTIN-A + OPTIN-B
+probe-r2. Entry dan artwork baru tetap perlu satu kali pengecekan di Switch.
+Jangan membawa kernel/loader ini ke Atmosphere versi lain tanpa build yang
+cocok. Memori guest di bawah 4 GiB adalah ruang alamat, bukan tambahan 4 GiB
+RAM fisik. Game/forwarder lama yang memakai whitelist Title ID masih butuh
+entry lama atau forwarder ABI v1 yang sesuai.
+
+Credits: Atmosphere, Horizon-OC, Autorun low-window work, Hekate/Nyx.
+Source, versi, lisensi dan checksum tersedia dalam paket. Baca README.md.

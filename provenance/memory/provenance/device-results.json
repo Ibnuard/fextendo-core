@@ -1,0 +1,14 @@
+{
+  "control": {
+    "sha256": "173801b3a4df56bc2c97b045de5c1230ff0b113f954b61df2dbe60e82d9a4c53",
+    "result": "PASS"
+  },
+  "optin-a": {
+    "sha256": "c5266e125fbc3a9331e98ebfc1dd9dbd8447c301f4ac360d2db9156b52b6384a",
+    "result": "PASS"
+  },
+  "optin-b": {
+    "sha256": "d4eea5fa5138eab2c121661744bd283037d0b1455ca985c78823622380ed6ccf",
+    "result": "PASS"
+  }
+}

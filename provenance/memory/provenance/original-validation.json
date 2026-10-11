@@ -1,0 +1,54 @@
+{
+  "status": "PASS",
+  "hardware_tested": false,
+  "descriptor_host_tests": "PASS 65836 descriptor, I/O, flag, and unchanged-default cases",
+  "kernel_and_both_loaders_built": true,
+  "source_and_packaged_artifacts_verified": true,
+  "hoc_settings_preserved": true,
+  "title_id_allowlist": null,
+  "actual_arm64_forwarder_cases": [
+    {
+      "control": false,
+      "case": "low-rng-candidate",
+      "native_nro": "0x100200000",
+      "reload": "PASS",
+      "allocator_bounds": "PASS"
+    },
+    {
+      "control": false,
+      "case": "high-rng-candidate",
+      "native_nro": "0x4000200000",
+      "reload": "PASS",
+      "allocator_bounds": "PASS"
+    },
+    {
+      "control": true,
+      "case": "low-rng-candidate",
+      "native_nro": "0x108000000",
+      "reload": "PASS",
+      "allocator_bounds": "PASS"
+    },
+    {
+      "control": true,
+      "case": "high-rng-candidate",
+      "native_nro": "0x4008000000",
+      "reload": "PASS",
+      "allocator_bounds": "PASS"
+    }
+  ],
+  "boot_files": {
+    "LICENSE.Atmosphere": "f9c375a1be4a41f7b70301dd83c91cb89e41567478859b77eef375a52d782505",
+    "LICENSE.HOC": "415913d27a54bd495e0b7f5ab84cac74ced0ac33f891c2805ee0ed480d1bcdd4",
+    "atmosphere-fextendo.patch": "f6f549e3f76a7e70283bb075b6e78bc1718c29a57bf4c2c4adb658c089bf6801",
+    "atmosphere-hoc-fextendo.patch": "e52f15f0998cb41cf938dfc9212ce2baa6c6704d3c210f09821a64e375bb0312",
+    "hoc-2.5.1-version.patch": "6158023d25bd95fbb9c9979cf53b34acd1e6c9e0840e40ae94cd26b648fe55aa",
+    "loader-hoc.kip": "be234d55b0fe72a169b29910bd778b8499716b08fbded45622293faa7561d748",
+    "loader-stock.kip": "6c223cad89e3c04bc5c6a2511f5b267f286baecdd653a3dd4ee5f8af3b3aff76",
+    "mesosphere.bin": "29ac80dcc6b7c909243dac1f7b1272e4eeb44882410c8c8032f7b9671a5f1d26"
+  },
+  "tests": {
+    "tests/fextendo_low_window.cpp": "6c58297fef9dfedda090c711663de7dcb9278cb20ec8fc3657a2b8de47933543",
+    "tests/fextendo_low_window_binary.py": "5bf98b638bee898f1369fbe52c53c5b507be8f32a8962555a70d93d6fcb130f0",
+    "tests/fextendo_low_window_boot.py": "c0cb89b0c72e6823f61035d39310f95e3d880df1b060312d8ce6396ae716aff6"
+  }
+}

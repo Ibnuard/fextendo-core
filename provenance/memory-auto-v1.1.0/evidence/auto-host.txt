@@ -1,0 +1,1 @@
+PASS: 16384 flag combinations, legacy/absent/dual descriptors, every descriptor bit mutation, I/O rollback/close, 32/39 native placement, heap caps, range overflow, reservation failure

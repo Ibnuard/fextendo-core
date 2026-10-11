@@ -1,0 +1,51 @@
+{
+  "passed": true,
+  "hardware_tested": false,
+  "version": "1.1.0",
+  "abi": "fxtmem-v1",
+  "extension": "fxtauto-v1",
+  "atmosphere": "1.11.2",
+  "revision": "5388824be146a89619e8d641acd64599cf1c5f62",
+  "hoc": "2.5.1",
+  "kernel_unchanged": true,
+  "hoc_configuration": "official-release-default",
+  "hoc_settings_sha256": "7f2ecdbb11bd27cedd1c49d2086cd006cab18087f945272178292254bdbfdf3f",
+  "hoc_settings_output_offset": 339628,
+  "hoc_settings_bytes": 26824,
+  "changes": {
+    "atmosphere": {
+      "patch_sha256": "53b3a94abaed2f7e34e83bc8577ef4717687aae0f643075f5f3d4343803d0874",
+      "frontdoor_order": [
+        "GetCreateProcessParameter(",
+        "ApplyFextendoMemoryDescriptor(",
+        "DecideAddressSpaceLayout(",
+        "svc::CreateProcess("
+      ]
+    },
+    "atmosphere-hoc": {
+      "patch_sha256": "b75bcaa73aea01fa442f64c702528efc1a2f26628f66bcb9b379d045f17899e3",
+      "frontdoor_order": [
+        "GetCreateProcessParameter(",
+        "ApplyFextendoMemoryDescriptor(",
+        "DecideAddressSpaceLayout(",
+        "svc::CreateProcess("
+      ]
+    }
+  },
+  "sources": {
+    "src/experimental/low_window/fextendo_memory_abi.hpp": "0fdc74d9edb1d6878d3693e311aa8f427f715f3d7eafe1658788df76d1e161ba",
+    "src/experimental/low_window/ldr_fextendo_memory.inc": "1406dc9cbc9eda45abd5145f0ecdd3086ca2db9ad43ee5b4171521f30467d05a",
+    "src/experimental/low_window/forwarder_auto.inc": "12b213575483ddcd59995a52a66c83c05d21815457141dfaf951116b2d0b5b00",
+    "tools/build-fextendo-auto-loader.py": "2e55f24e1e734c643c7904df6100f12d693c42d6630baed4009cb2584fdf6442",
+    "tests/fextendo_auto.cpp": "3a1f8e33b6d89de85baa1e426d2dcd02a9b8429b1fd0aad9c895a951723c22ea"
+  },
+  "files": {
+    "mesosphere.bin": "29ac80dcc6b7c909243dac1f7b1272e4eeb44882410c8c8032f7b9671a5f1d26",
+    "loader-hoc.kip": "aead8e1451db65572f8ca7b0e9971fed6206031b8533126cc6e2f63deaf99eb7",
+    "loader-stock.kip": "cd6fa138895d8adccbb1508643e2c4a785d9a7f95d570e9d65ebb35eb4263d9d"
+  },
+  "elfs": {
+    "atmosphere": "d4a4849951c580191551684f319a73065229c23c91493d06b5a0714070375bd8",
+    "atmosphere-hoc": "8184b88f33bb79cc5162bbac83309889d069a5fd3b413bca2b88e86fbe14f322"
+  }
+}

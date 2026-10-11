@@ -1,0 +1,31 @@
+FEXTendo Patch 1.1.0
+
+1. Salin folder switch dari paket ini ke root microSD.
+2. Buka FEXTendo Patch melalui hbmenu.
+3. Pastikan status Ready to install, pilih Install patch, lalu konfirmasi.
+4. Setelah selesai, reboot ke Hekate > More configs > FEXTendo Patch (emuMMC).
+
+Paket bawaan: Atmosphere 1.11.2 / revisi 5388824b, HOC 2.5.1 default resmi.
+Versi Atmosphere lain akan ditolak sampai tersedia paket yang cocok.
+Installed berarti berkas sudah terpasang; aktivasi kernel baru perlu reboot.
+NRO installer ini tidak memerlukan forwarder low-memory khusus.
+
+Pembaruan ini menambahkan deteksi otomatis fxtauto-v1 pada loader.
+Dengan NSP game yang mendukungnya: tanpa patch tetap mode 32-bit no-alias;
+setelah boot patch 1.1.0 menjadi mode 39-bit low-window, memakai NSP yang sama.
+NSP fxtmem-v1 lama tetap didukung. Kernel dan setting resmi HOC tidak berubah.
+Jalur otomatis baru sudah dites host, tetapi tetap perlu validasi di Switch.
+
+Kontrol: A pilih, B kembali/batal, + keluar, X bantuan. Touch juga tersedia.
+Jika instalasi terputus, buka lagi aplikasi dan pilih Recover installation.
+
+CHECK UPDATE
+Check update langsung memakai repo resmi Ibnuard/fextendo-core.
+Tidak perlu membuat update.ini. Instalasi offline tetap bisa digunakan.
+NRO terbaru: https://github.com/Ibnuard/fextendo-core/releases/latest
+update.ini.example hanya diperlukan untuk mengganti sumber pembaruan.
+
+Ini aplikasi installer terpisah dari runtime/game PES.
+Tidak mengubah folder game, pengaturan Hekate utama, atau HOC global.
+Build dan tes host sudah tersedia; installer baru tetap perlu diuji di Switch.
+Lihat README.md untuk detail dan docs/RELEASING.md pada source project.

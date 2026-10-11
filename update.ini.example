@@ -1,0 +1,5 @@
+# Optional override. Official builds already use the repository below.
+# Copy as SD:/switch/fextendo-patch/update.ini only to override that default.
+# Use owner/repo without a URL. Only public stable GitHub Releases are accepted.
+[updates]
+repository=Ibnuard/fextendo-core

@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "version": "1.0.0",
+  "abi": "fxtmem-v1",
+  "atmosphere_version": "1.11.2",
+  "atmosphere_revision": "5388824be146a89619e8d641acd64599cf1c5f62",
+  "hos_reference": "22.5.0",
+  "hoc_version": "2.5.1",
+  "hoc_revision": "d9906a794c6015a892c60744d520faf793d22549",
+  "hoc_archive_url": "https://github.com/Horizon-OC/Horizon-OC/releases/download/2.5.1/dist.zip",
+  "hoc_archive_sha256": "48a57eef49032cbae615074676df4a5fb017aff40be3f45734a158d5b19ffa00",
+  "hoc_official_kip_sha256": "457fe2e44547c59cf3b3f7ebd62e91730ca7b224462475df3fe930d22f49c5aa",
+  "hoc_settings_sha256": "7f2ecdbb11bd27cedd1c49d2086cd006cab18087f945272178292254bdbfdf3f",
+  "hoc_settings_length": 26824,
+  "hoc_official_settings_offset": 325900,
+  "hoc_patched_settings_offset": 339052,
+  "boot_files": {
+    "mesosphere.bin": "29ac80dcc6b7c909243dac1f7b1272e4eeb44882410c8c8032f7b9671a5f1d26",
+    "loader-hoc.kip": "be234d55b0fe72a169b29910bd778b8499716b08fbded45622293faa7561d748"
+  },
+  "hardware_probe_sha256": {
+    "control": "173801b3a4df56bc2c97b045de5c1230ff0b113f954b61df2dbe60e82d9a4c53",
+    "optin-a": "c5266e125fbc3a9331e98ebfc1dd9dbd8447c301f4ac360d2db9156b52b6384a",
+    "optin-b": "d4eea5fa5138eab2c121661744bd283037d0b1455ca985c78823622380ed6ccf"
+  }
+}

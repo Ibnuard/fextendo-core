@@ -9,21 +9,21 @@
 namespace fxp {
 using Bytes = std::vector<uint8_t>;
 using Json = nlohmann::json;
-constexpr const char* AppVersion = "1.2.0";
+constexpr const char* AppVersion = "1.3.0";
 constexpr const char* StateDir = "switch/fextendo-patch";
 constexpr const char* EntryPath = "bootloader/ini/fextendo-patch.ini";
 struct Asset { std::string name, hash, url; uint64_t size=0; };
 struct Bundle {
-    std::string version, atmosphere, revision, hoc, hos;
+    std::string version, atmosphere, revision, hoc, hos, loaderKind="hoc";
     Asset kernel, loader;
     bool online=false;
 };
 struct Catalog { std::string version; std::vector<Bundle> bundles; };
 struct Environment { std::string atmosphere, hos; bool atmosphereKnown=false; };
 struct Status {
-    bool supported=false, ready=false, installed=false, recovery=false;
+    bool supported=false, ready=false, installed=false, recovery=false, revisionMatches=false;
     std::string running="Unknown", disk="Unknown", revision, hos="Unknown";
-    std::string headline, detail, installation="Not installed", emummc="Not checked";
+    std::string headline, detail, installation="Not installed", emummc="Not checked", loaderKind="stock";
     Bundle bundle;
 };
 struct Progress {
@@ -45,7 +45,10 @@ Json bundleJson(const Bundle& bundle);
 std::string bundleId(const Bundle& bundle);
 int versionCompare(const std::string& a, const std::string& b);
 Catalog loadCatalog(const std::string& romfs);
-Status inspect(const std::string& root, const Environment& env, const Catalog& catalog);
+Status inspect(const std::string& root, const Environment& env, const Catalog& catalog,
+               const std::string& loaderKind="auto");
+std::string loaderLabel(const Bundle& bundle);
+void mergeCatalog(Catalog& current, const Catalog& update);
 bool pending(const std::string& root);
 void recover(const std::string& root, const Progress& progress);
 void install(const std::string& root, const std::string& romfs,

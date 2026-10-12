@@ -15,25 +15,37 @@ Wine prefix, NSP or forwarder is included. This project is independent of PES13.
 Copy `FEXTendo-Patch.nro` into `SD:/switch/fextendo-patch/` and open it in hbmenu.
 The installer does not itself require a low-window forwarder. Controller and touch
 input are supported; use **A** to select, **B** to go back/cancel, **+** to exit,
-and **X** for help. Long operations run on a worker while the UI remains responsive.
+**Y** to change loader, and **X** for help. Long operations run on a worker while the UI remains responsive.
 
 1. Read **System status**. Both the running Atmosphere and the SD `package3`
-   version must match, with the exact supported `package3` source revision.
-2. Choose **Install patch** and review the version/boot-entry confirmation.
+   version must match a supported version. The source revision is displayed;
+   a different revision does not block a matching version by itself.
+2. Choose **Standard / sys-clk** (default) or **HOC / official defaults**,
+   then **Install patch** and review the confirmation.
 3. After installation, reboot to **Hekate > More configs > FEXTendo Patch (emuMMC)**.
    Nyx's **All configs** home-screen option can put this entry with other entries.
 
-The installer selects the matching pair automatically; users do not choose a KIP.
+The installer selects the matching pair for the selected loader automatically.
+Standard is the Atmosphere loader with FEXTendo memory support and no HOC code.
+It works with or without sys-clk; it does not install sys-clk or change its profiles.
+HOC is optional. Existing installations retain their loader selection when reopened;
+choosing the other loader replaces only the managed FEXTendo entry after verification.
 
-| Atmosphere / package3 revision | Bundle | HOS reference | Validation |
+| Atmosphere / source revision | Standard bundle | HOC bundle | HOS reference |
 | --- | --- | --- | --- |
-| 1.11.2 / 5388824b | 1.1.0 | 22.5.0 | Existing distributed kernel and loader, byte-identical |
-| 1.12.0 / 28d6a2e1 | 1.2.0 | 23.0.0 | New source port; Switch boot/gameplay test pending |
+| 1.9.5 / de9b0200 | 1.3.0 | 1.3.0 | 20.5.0 |
+| 1.11.2 / 5388824b | 1.3.0 | 1.1.0 (unchanged) | 22.5.0 |
+| 1.12.0 / 28d6a2e1 | 1.3.0 | 1.2.0 (unchanged) | 23.0.0 |
 
-Both bundles retain **HOC 2.5.1 official defaults**, `fxtauto-v1` and `fxtmem-v1`.
-The 1.12.0 pair retains that version's upstream kernel/loader changes and ports
+Both loader options support `fxtauto-v1` and `fxtmem-v1`. Only HOC bundles include
+**HOC 2.5.1 official defaults**. The 1.12.0 HOC pair retains that version's upstream kernel/loader changes and ports
 the reviewed HOC OC code onto it. This is a FEXTendo integration, not an official
 HOC release or a claim of tested HOC compatibility with every firmware.
+
+The 1.9.5 pair is built from upstream `de9b02007bbfc62f2f9ee2abf4a96bc337f5f86a`,
+with its own kernel and both loader variants. The submitted `package3` was verified
+byte-for-byte against the [official 1.9.5 release](https://github.com/Atmosphere-NX/Atmosphere/releases/tag/1.9.5).
+Boot and gameplay validation of the new 1.9.5 pair is still required on a Switch.
 
 **Switch firmware (HOS) and Atmosphere are different versions.** A user on FW 17,
 18, etc. is not rejected merely because the reference firmware is newer. The
@@ -43,7 +55,9 @@ or wait for a separately built bundle. The HOS references above (the legacy
 catalog key is `tested_hos`) are not a device-tested firmware compatibility range.
 See [compatibility and test details](docs/COMPATIBILITY.md).
 
-An unsupported Atmosphere build is blocked, not substituted with a different pair.
+An unsupported Atmosphere version is blocked, not substituted with a different pair.
+Different commit revisions of a supported version are allowed, as in Autorun's
+version-based setup, but acceptance is not a hardware-compatibility certification.
 An enabled emuMMC and a Hekate/Nyx version supporting the console's HOS are required.
 
 After updating Atmosphere, boot your ordinary CFW entry first, reopen this NRO,
@@ -88,7 +102,7 @@ application code; existing independent Hekate entries remain the fallback.
 
 The installer does not edit `hekate_ipl.ini`, `nyx.ini`, autoboot, `package3`,
 `atmosphere/kips/hoc.kip`, sys-clk profiles or game files. It installs a dedicated
-HOC copy; tools that edit the global `hoc.kip` do **not** change this dedicated copy.
+HOC copy only if selected; tools that edit the global `hoc.kip` do **not** change this dedicated copy.
 The new entry deliberately loads only one loader. Existing Autorun entries can
 coexist, but this release does not claim a combined Autorun/FEXTendo kernel.
 
@@ -119,10 +133,26 @@ missing digests, oversized downloads, unsafe asset names, duplicate entries and
 same-version payload changes are rejected. Trust is in the configured repository
 and GitHub TLS; hashes are integrity checks, not an independent signing authority.
 
-**Check update** only refreshes candidates in memory. **Install patch** performs
-the selected compatible download and installation. This updates boot patches;
-it does not replace the running NRO. If a future catalog requires a newer app,
-the app tells the user to download the new NRO. See [release instructions](docs/RELEASING.md).
+**Check update** also checks the app version. When a newer NRO is available,
+choose **Update app**, wait for verification and installation, then exit and
+reopen FEXTendo Patch. The app checks the GitHub SHA-256 digest, NRO structure,
+application title and release version before replacing the actual launched SD
+file. A newer app can be offered even when its catalog requires a newer parser.
+Boot patches still use **Install patch** and require a reboot through Hekate;
+updating the NRO alone does not change the installed boot pair or user settings.
+
+Users on releases **before 1.3.0 must copy the new NRO once** to gain this feature.
+The new updater cannot be added to an already installed old NRO through a catalog.
+NRO updating requires a file launched from the SD `switch/` directory (hbmenu),
+not nxlink or an embedded executable.
+
+Downloads and staged writes leave the old app in place. During publication,
+RomFS is closed and the old executable becomes `<app>.nro.recovery.nro` until
+the replacement is verified. Successful updates remove temporary files. After
+an interrupted update, reopening the normal NRO recovers automatically. If the
+normal entry is missing, launch the recovery NRO in the same folder once, then
+reopen the normal app. Modified or invalid recovery files are left intact.
+See [release instructions](docs/RELEASING.md).
 
 ## Build and test
 
@@ -137,7 +167,7 @@ python3 tools/release.py
 ```
 
 Generated NRO: `FEXTendo-Patch.nro`. Copy-ready distribution:
-`dist/FEXTendo-Patch-v1.2.0/`. Local distribution is a folder, not a ZIP.
+`dist/FEXTendo-Patch-v1.3.0/`. Local distribution is a folder, not a ZIP.
 `dist/release-assets/` contains the raw files used by GitHub Releases and the updater.
 The pipeline runs host tests, builds the NRO and uploads artifacts on each PR or
 push to `main`. A new app version on `main` publishes a stable `vX.Y.Z` release

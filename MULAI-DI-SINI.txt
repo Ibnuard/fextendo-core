@@ -1,39 +1,37 @@
-FEXTendo Patch 1.2.0
+FEXTendo Patch 1.3.0
 
 1. Salin folder switch dari paket ini ke root microSD.
 2. Buka FEXTendo Patch melalui hbmenu.
-3. Pastikan status Ready to install, pilih Install patch, lalu konfirmasi.
-4. Setelah selesai, reboot ke Hekate > More configs > FEXTendo Patch (emuMMC).
+3. Pilih loader Standard / sys-clk atau HOC / official defaults.
+   Standard adalah pilihan awal: tidak memasang HOC dan tidak mengubah sys-clk.
+   Instalasi lama mempertahankan pilihan loader-nya saat aplikasi dibuka kembali.
+   Tekan Y atau sentuh pilihan loader untuk menggantinya.
+4. Pilih Install patch, lalu konfirmasi.
+5. Reboot ke Hekate > More configs > FEXTendo Patch (emuMMC).
 
-Satu NRO, paket dipilih otomatis:
-- Atmosphere 1.11.2 / revisi 5388824b: paket lama 1.1.0 tetap sama.
-- Atmosphere 1.12.0 / revisi 28d6a2e1: port baru 1.2.0, perlu tes di Switch.
-Keduanya memakai HOC 2.5.1 dengan blok pengaturan default resmi yang sama.
-Versi Atmosphere lain akan ditolak sampai tersedia paket yang cocok.
-Versi FW/HOS berbeda dari versi Atmosphere. FW 17-23 bukan pembatas tunggal
-installer, tetapi belum semua kombinasi FW/model/HOC diuji di perangkat.
-Installed berarti berkas sudah terpasang; aktivasi kernel baru perlu reboot.
-NRO installer ini tidak memerlukan forwarder low-memory khusus.
-Setelah update Atmosphere: boot CFW biasa dulu, buka NRO ini, lalu pasang
-paket yang cocok sebelum boot ulang melalui entry FEXTendo Patch.
+Atmosphere yang tersedia: 1.9.5, 1.11.2 dan 1.12.0, masing-masing Standard dan HOC.
+Versi Atmosphere aktif dan package3 di SD harus sama. Revisi commit ditampilkan;
+revisi berbeda tidak lagi langsung memblokir versi yang didukung.
+Versi Atmosphere lain tetap memerlukan paket tersendiri.
+FW/HOS berbeda dari versi Atmosphere; seluruh kombinasi belum diuji di perangkat.
 
-Pembaruan ini memperluas deteksi otomatis fxtauto-v1 ke Atmosphere 1.12.0.
-Dengan NSP game yang mendukungnya: tanpa patch tetap mode 32-bit no-alias;
-setelah boot salah satu paket menjadi mode 39-bit low-window, NSP tetap sama.
-NSP fxtmem-v1 lama tetap didukung. Paket 1.11.2 tidak berubah.
-Kernel/loader 1.12.0 dibangun ulang; ini port FEXTendo, bukan rilis HOC resmi.
-Tes host tidak menggantikan validasi boot dan gameplay pada Switch.
+HOC tetap opsional, memakai default resmi 2.5.1 di entry FEXTendo saja.
+Standard mempertahankan dukungan fxtmem-v1/fxtauto-v1 tanpa kode HOC.
+Kernel dan loader HOC lama tidak diubah. Paket 1.9.5 dan Standard 1.12.0 perlu tes boot/gameplay.
+Installed berarti berkas terpasang; aktivasi memerlukan reboot.
+Setelah update Atmosphere: boot CFW biasa dulu, buka installer, pasang paket yang
+cocok, lalu boot ulang melalui entry FEXTendo Patch.
 
-Kontrol: A pilih, B kembali/batal, + keluar, X bantuan. Touch juga tersedia.
-Jika instalasi terputus, buka lagi aplikasi dan pilih Recover installation.
+Kontrol: A pilih, B kembali/batal, Y ganti loader, + keluar, X bantuan. Touch tersedia.
+Jika instalasi terputus, buka aplikasi dan pilih Recover installation.
+Pengaturan sys-clk, HOC global, boot utama Hekate, dan folder game tidak diubah.
 
-CHECK UPDATE
-Check update langsung memakai repo resmi Ibnuard/fextendo-core.
-Tidak perlu membuat update.ini. Instalasi offline tetap bisa digunakan.
-NRO terbaru: https://github.com/Ibnuard/fextendo-core/releases/latest
-update.ini.example hanya diperlukan untuk mengganti sumber pembaruan.
-
-Ini aplikasi installer terpisah dari runtime/game PES.
-Tidak mengubah folder game, pengaturan Hekate utama, atau HOC global.
-Build dan tes host sudah tersedia; installer baru tetap perlu diuji di Switch.
-Lihat README.md untuk detail dan docs/RELEASING.md pada source project.
+Check update memakai Ibnuard/fextendo-core untuk aplikasi dan paket boot.
+Jika NRO baru tersedia: pilih Update app, tunggu selesai, keluar lalu buka lagi.
+Update aplikasi tidak mengganti patch boot; untuk itu tetap pilih Install patch
+kemudian reboot melalui Hekate.
+Pengguna NRO sebelum 1.3.0 perlu menyalin NRO ini sekali untuk mendapat updater.
+Jika update terputus dan NRO utama hilang, buka file .recovery.nro di folder yang
+sama sekali untuk pemulihan, kemudian buka lagi aplikasi utamanya.
+Download: https://github.com/Ibnuard/fextendo-core/releases/latest
+Paket lokal berupa folder siap salin, tanpa ZIP.

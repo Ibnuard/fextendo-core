@@ -39,12 +39,22 @@ def metadata():
     catalog_path = ROOT/'romfs/catalog.json'
     require(f'#define FXP_CATALOG_HASH "{sha(catalog_path)}"' in generated, 'Stale embedded catalog hash. Run prepare.py.')
     catalog = json.loads(catalog_path.read_text())
+    require(catalog['min_app_version'] == '1.3.0', 'Loader variants require the 1.3.0 installer.')
+    identities=set()
     for bundle in catalog['bundles']:
+        kind=bundle.get('loader_kind','hoc')
+        require(kind in ('stock','hoc'), 'Unknown loader variant.')
+        identity=(bundle['atmosphere'],kind)
+        require(identity not in identities, 'Ambiguous Atmosphere/loader selection.')
+        identities.add(identity)
+        require((kind=='stock' and bundle['hoc']=='' and bundle['hoc_configuration']=='not-applicable') or
+                (kind=='hoc' and bundle['hoc_configuration']=='official-release-default'), 'Invalid loader configuration.')
         for kind in ['kernel', 'loader']:
             asset = bundle[kind]
             require(re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]*', asset['asset']), 'Unsafe asset name.')
             path = ROOT/'romfs/boot'/asset['asset']
             require(path.stat().st_size == asset['bytes'] and sha(path) == asset['sha256'], 'Boot payload differs from catalog: '+asset['asset'])
+    require(identities=={(ams,kind) for ams in ('1.9.5','1.11.2','1.12.0') for kind in ('stock','hoc')}, 'Both Standard and HOC bundles must be packaged.')
     return {'version': version, 'tag': 'v'+version}
 
 
@@ -143,20 +153,24 @@ def publish(directory):
         require(semver(meta['version']) > semver(latest['tag_name'].removeprefix('v')), 'Refusing to replace latest with an older version.')
     notes = directory.parent/'release-notes.md'
     catalog = json.loads((directory/'fextendo-patch.json').read_text())
-    supported = ', '.join('**'+b['atmosphere']+' / '+b['revision']+'**' for b in catalog['bundles'])
+    supported = ', '.join('**'+version+'**' for version in sorted({b['atmosphere'] for b in catalog['bundles']},key=semver))
     notes.write_text(
         f'FEXTendo Patch {tag}\n\n'
         'Download **FEXTendo-Patch.nro** and copy it to `SD:/switch/fextendo-patch/`. '
-        'Check update uses this repository automatically.\n\n'
-        f'The bundled boot pairs match Atmosphere {supported}, with '
-        'HOC **2.5.1 official defaults**. Install it, then reboot through '
+        'Users upgrading from older NROs need this one manual copy to gain the app updater. '
+        'Future app releases can be installed through **Check update > Update app**; exit and reopen afterward. '
+        'Boot patch installation stays separate and still needs a Hekate reboot.\n\n'
+        f'The bundled boot pairs target Atmosphere {supported}. **Standard / sys-clk** is the default for new installs, '
+        'with **HOC 2.5.1 official defaults** available as a separate choice. Standard does not install HOC or change sys-clk settings. '
+        'Existing HOC installations keep their selection until you choose another loader. Install, then reboot through '
         '**Hekate > More configs > FEXTendo Patch (emuMMC)**. Other Atmosphere '
-        'versions require a matching bundle.\n\n'
+        'versions require a matching bundle. Selection checks the running and SD Atmosphere version; a different source revision '
+        'is displayed but no longer blocks installation by itself. Payload SHA-256 verification remains required.\n\n'
         'The fxtauto-v1 loader supports one compatible game NSP: ordinary boot '
         'uses 32-bit no-alias; the patched boot selects 39-bit low-window. '
         'Existing fxtmem-v1 forwarders remain supported.\n\n'
-        'Host tests and NRO/package validation passed. The 1.11.2 payloads are unchanged; '
-        'the new 1.12.0 kernel/HOC loader port still needs Switch boot and gameplay validation. '
+        'Host tests and NRO/package validation passed. Existing kernels and HOC payloads are unchanged. '
+        'The new 1.9.5 kernel/loader pair, Standard 1.12.0 loader and custom Atmosphere builds need Switch boot and gameplay validation. '
         'HOS firmware numbers are separate from Atmosphere versions; not all FW 17-23 '
         'combinations have been tested on hardware. No game data is included.\n\n'
         f'Source commit: `{head}`. Raw catalog/kernel/loader assets are used by '

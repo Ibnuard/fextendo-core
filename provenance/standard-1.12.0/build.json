@@ -1,0 +1,29 @@
+{
+  "atmosphere": "1.12.0",
+  "revision": "28d6a2e11f2640077bbb8a9fbd463d3fa12b6984",
+  "loader_kind": "stock",
+  "abi": "fxtmem-v1",
+  "extension": "fxtauto-v1",
+  "hardware_tested": false,
+  "libnx_revision": "feebd026ca0f5dcc2119f46ad8e0d16ad3dd4973",
+  "libnx_sha256": "a924e690ceed3f4ba7897d5b15d000a8b5e46c6dc64c555a3f5baac7be82351f",
+  "builder_sha256": "7e41952f75ae2ee199e9ba84fc40f0c87258fca0cc056b1517a269ceda5ddbba",
+  "patch_sha256": "5cc5ad51e1b63894ccd8e18d455b30de1fbbb13ddf048e6aaa5bce47a26f3cf6",
+  "payload_sha256": "630c1845f4fc21f91cb1dc74a948f9954522507cf5745d7950de5626d38a0116",
+  "payload_bytes": 191252,
+  "hoc_symbols": false,
+  "descriptor_order": [
+    41278,
+    41376,
+    41493
+  ],
+  "host_validation": {
+    "passed": true,
+    "evidence_sha256": "404de2675e5dd1edbb635471d4346e97aa666e482f8526f0a5d28dbe57f058b1",
+    "harnesses": {
+      "auto-host.cpp": "8007a48a381672e84418f7d4eb333311cc6eb4eebace5c52231862bfa5e19736",
+      "layout-host.cpp": "a0d22184cb65319e51d1030b5839ee154e8b551a11f569dd3e9db3e0bd7fddb9"
+    },
+    "checker_sha256": "3eca41ff0ba41d30e1bb04841a4aa2b517b4a4efc0826df1f5acb1db0e6c8766"
+  }
+}

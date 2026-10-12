@@ -1,6 +1,6 @@
 export APP_TITLE := FEXTendo Patch
 export APP_AUTHOR := FEXTendo
-export APP_VERSION := 1.2.0
+export APP_VERSION := 1.3.0
 ICON := assets/icon.jpg
 #---------------------------------------------------------------------------------
 .SUFFIXES:

@@ -48,6 +48,25 @@ Catalog verifyReleaseCatalog(const Bytes& manifest,const std::vector<Asset>& ass
         }b.online=true;
     }return c;
 }
+Update verifyUpdate(const Bytes& manifest,const std::vector<Asset>& assets,const std::string& tag) {
+    const auto a=findAsset(assets,"fextendo-patch.json");
+    require(a.size==manifest.size()&&a.hash==hash(manifest),"Release catalog SHA-256 mismatch.");
+    require(tag.size()>1&&tag.front()=='v',"Invalid app release tag.");
+    Update u;u.tag=tag;u.appVersion=tag.substr(1);
+    u.appAvailable=versionCompare(u.appVersion,AppVersion)>0;
+    auto raw=parseJson(std::string(manifest.begin(),manifest.end()));
+    require(raw.at("application")=="fextendo-patch","Wrong update application.");
+    const auto minimum=raw.at("min_app_version").get<std::string>();
+    u.appRequired=versionCompare(minimum,AppVersion)>0;
+    require(versionCompare(u.appVersion,minimum)>=0,"Release NRO is older than its catalog requirement.");
+    if(u.appAvailable){
+        u.app=findAsset(assets,"FEXTendo-Patch.nro");
+        require(u.app.size>=0x4000&&u.app.size<=MaxNroSize,"Invalid NRO download size.");
+    }
+    // Offer the app upgrade even when the new catalog needs a newer parser.
+    if(!u.appRequired){u.catalog=verifyReleaseCatalog(manifest,assets);u.hasCatalog=true;}
+    return u;
+}
 struct Network {
     bool socket=false, curl=false;
     Network() {
@@ -104,7 +123,7 @@ static Bytes get(const std::string& url,size_t limit,const Progress& p) {
     return std::move(t.data);
 }
 Bytes download(const Asset& a,const Progress& p) {
-    require(a.size>0&&a.size<=16*1024*1024,"Invalid download size.");Network network;
+    require(a.size>0&&a.size<=MaxNroSize,"Invalid download size.");Network network;
     auto data=get(a.url,a.size,p);require(data.size()==a.size&&hash(data)==a.hash,"Downloaded asset SHA-256 mismatch. Boot files unchanged.");return data;
 }
 Update checkUpdate(const std::string& repo,const Progress& p) {
@@ -113,6 +132,6 @@ Update checkUpdate(const std::string& repo,const Progress& p) {
     auto response=get("https://api.github.com/repos/"+repo+"/releases/latest",512*1024,p);
     Update u;auto assets=releaseAssets(repo,std::string(response.begin(),response.end()),u.tag);
     const auto& manifest=findAsset(assets,"fextendo-patch.json");require(manifest.size>0&&manifest.size<=512*1024,"Invalid catalog size.");
-    auto data=get(manifest.url,manifest.size,p);u.catalog=verifyReleaseCatalog(data,assets);return u;
+    auto data=get(manifest.url,manifest.size,p);return verifyUpdate(data,assets,u.tag);
 }
 }

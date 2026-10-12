@@ -6,6 +6,7 @@ struct View {
     Status status;
     int selection=0, percent=0;
     bool busy=false, confirm=false, message=false, success=false, about=false;
+    bool appUpdateAvailable=false, appConfirm=false, exitRequired=false, finishing=false;
     std::string repository, updateText="Bundled patch available offline";
     std::string title, detail, progress;
 };
@@ -24,5 +25,6 @@ public:
     explicit Ui(const std::string& romfs);
     void draw(uint32_t* pixels,int stride,const View& view);
     static int hit(int x,int y);
+    static int loaderHit(int x,int y);
 };
 }

@@ -1,0 +1,2 @@
+PASS: 262144 flag combinations, legacy/absent/dual descriptors, every descriptor bit mutation, I/O rollback/close, 32/39 native placement, heap caps, range overflow, reservation failure
+PASS: upstream 32/36/39/42 ASLR selection, opt-in high native placement, ShadowStack flag, low-code rejection, non-application and ASan rejection, unchanged unmarked layouts

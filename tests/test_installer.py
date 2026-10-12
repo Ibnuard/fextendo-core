@@ -6,6 +6,9 @@ ROOT=Path(__file__).resolve().parents[1]
 DRIVER=ROOT/'build-host/driver'
 ROMFS=ROOT/'romfs'
 
+def stock_bundle(c,version='1.11.2'):
+    return next(b for b in c['bundles'] if b['atmosphere']==version and b.get('loader_kind')=='stock')
+
 def fixture(root):
     for name in ['atmosphere','bootloader/sys','bootloader/ini','emuMMC']:
         (root/name).mkdir(parents=True,exist_ok=True)
@@ -48,9 +51,9 @@ class Installer(Fixtures):
             self.assertFalse(self.status(env={'FXP_RUNNING_AMS':version})['ready'])
             self.assertNotEqual(self.run_driver('install',env={'FXP_RUNNING_AMS':version},ok=False).returncode,0)
         self.assertEqual(before,snapshot(self.sd))
-    def test_package3_wrong_revision_and_truncation(self):
+    def test_package3_bad_header_and_truncation(self):
         p=self.sd/'atmosphere/package3';data=p.read_bytes()
-        for content in [data[:48],data[:60]+bytes(4),b'BAD!'+data[4:]]:
+        for content in [data[:48],data[:60],b'BAD!'+data[4:]]:
             p.write_bytes(content);self.assertFalse(self.status()['ready'])
     def test_disabled_emummc_and_missing_hekate(self):
         p=self.sd/'emuMMC/emummc.ini';p.write_text('[emummc]\nenabled=0\n');self.assertFalse(self.status()['ready'])
@@ -59,7 +62,7 @@ class Installer(Fixtures):
         before=snapshot(self.sd);self.assertNotEqual(self.run_driver('cancel',ok=False).returncode,0);self.assertEqual(before,snapshot(self.sd))
     def test_bad_payload_does_not_publish(self):
         self.romfs=self.base/'romfs';shutil.copytree(ROMFS,self.romfs)
-        loader=json.loads((self.romfs/'catalog.json').read_text())['bundles'][0]['loader']['asset']
+        loader=stock_bundle(json.loads((self.romfs/'catalog.json').read_text()))['loader']['asset']
         p=self.romfs/'boot'/loader;data=bytearray(p.read_bytes());data[-1]^=1;p.write_bytes(data)
         before=snapshot(self.sd);r=self.run_driver('install',ok=False);self.assertNotEqual(r.returncode,0);self.assertIn('SHA-256',r.stderr);self.assertEqual(before,snapshot(self.sd))
     def test_changed_catalog_is_rejected(self):
@@ -71,7 +74,7 @@ class Installer(Fixtures):
         self.assertTrue(list(self.sd.glob('switch/fextendo-patch/backup-*.ini')))
     def test_catalog_update_and_reopen_recognition(self):
         self.run_driver('install');old=(self.sd/'bootloader/ini/fextendo-patch.ini').read_text()
-        c=json.loads((ROMFS/'catalog.json').read_text());c['bundles'][0]['version']='1.1.1';c['catalog_version']='1.1.1'
+        c=json.loads((ROMFS/'catalog.json').read_text());stock_bundle(c)['version']='1.3.1';c['catalog_version']='1.3.1'
         path=self.base/'new-catalog.json';path.write_text(json.dumps(c));self.run_driver('install-catalog',path)
         self.assertTrue(self.status()['installed']);self.assertNotEqual((self.sd/'bootloader/ini/fextendo-patch.ini').read_text(),old)
         self.assertEqual(next(self.sd.glob('switch/fextendo-patch/backup-*.ini')).read_text(),old)
@@ -80,7 +83,7 @@ class Installer(Fixtures):
         oldloader=ROMFS/'boot/loader-hoc-1.11.2.kip'
         b['version']='1.0.0';c['catalog_version']='1.0.0'
         b['loader']={'asset':oldloader.name,'bytes':oldloader.stat().st_size,'sha256':hashlib.sha256(oldloader.read_bytes()).hexdigest()}
-        path=self.base/'v1.json';path.write_text(json.dumps(c));self.run_driver('install-catalog',path)
+        path=self.base/'v1.json';path.write_text(json.dumps(c));self.run_driver('install-catalog',path,env={'FXP_LOADER':'hoc'})
         entry=self.sd/'bootloader/ini/fextendo-patch.ini';previous=entry.read_text()
         payloads=snapshot(self.sd/'atmosphere/fextendo/patch')
         self.run_driver('install');self.assertTrue(self.status()['installed'])
@@ -92,27 +95,94 @@ class Installer(Fixtures):
         # Synthetic fixture: not a claim that these binaries support 1.13.0.
         p=self.sd/'atmosphere/package3';data=bytearray(p.read_bytes());data[57]=0;data[58]=13;p.write_bytes(data)
         env={'FXP_RUNNING_AMS':'1.13.0'};self.assertFalse(self.status(env=env)['supported'])
-        c=json.loads((ROMFS/'catalog.json').read_text());c['bundles'][0]['atmosphere']='1.13.0'
+        c=json.loads((ROMFS/'catalog.json').read_text());stock_bundle(c)['atmosphere']='1.13.0'
         path=self.base/'future.json';path.write_text(json.dumps(c));self.run_driver('install-catalog',path,env=env)
         self.assertTrue(self.status(env=env)['installed'])
-    def test_112_chooses_new_pair_and_rejects_foreign_revision(self):
+    def test_112_accepts_same_version_foreign_revision(self):
         p=self.sd/'atmosphere/package3';data=bytearray(p.read_bytes())
         data[57:60]=bytes([0,12,1]);struct.pack_into('<I',data,60,0x28d6a2e1);p.write_bytes(data)
         env={'FXP_RUNNING_AMS':'1.12.0','FXP_RUNNING_HOS':'23.0.0'}
-        s=self.status(env=env);self.assertTrue(s['ready']);self.assertEqual(s['bundle'],'1.2.0')
+        s=self.status(env=env);self.assertTrue(s['ready']);self.assertEqual(s['bundle'],'1.3.0')
         self.assertEqual(s['kernel'],'mesosphere-1.12.0.bin')
-        self.assertEqual(s['loader'],'loader-hoc-1.12.0-auto-v1.2.0.kip')
+        self.assertEqual(s['loader'],'loader-stock-1.12.0-auto-v1.3.0.kip')
         self.run_driver('install',env=env);self.assertTrue(self.status(env=env)['installed'])
-        catalog=json.loads((ROMFS/'catalog.json').read_text());bundle=next(b for b in catalog['bundles'] if b['atmosphere']=='1.12.0')
+        catalog=json.loads((ROMFS/'catalog.json').read_text());bundle=stock_bundle(catalog,'1.12.0')
         for kind,name in [('kernel','mesosphere.bin'),('loader','loader.kip')]:
             installed=next(self.sd.glob('atmosphere/fextendo/patch/*/'+name))
             self.assertEqual(hashlib.sha256(installed.read_bytes()).hexdigest(),bundle[kind]['sha256'])
         struct.pack_into('<I',data,60,0x5388824b);p.write_bytes(data)
-        before=snapshot(self.sd);self.assertFalse(self.status(env=env)['supported'])
-        self.assertNotEqual(self.run_driver('install',env=env,ok=False).returncode,0);self.assertEqual(before,snapshot(self.sd))
+        before=snapshot(self.sd);s=self.status(env=env)
+        self.assertTrue(s['supported']);self.assertTrue(s['installed']);self.assertFalse(s['revision_matches'])
+        self.assertEqual(s['revision'],'5388824b');self.assertIn('Different source revision',s['detail'])
+        self.assertEqual(before,snapshot(self.sd))
+    def test_standard_default_and_switching_loader_preserves_sysclk(self):
+        config=self.sd/'config/sys-clk/config.ini';config.parent.mkdir(parents=True);config.write_text('[01001234]\nhandheld_cpu=1224\n')
+        hoc=self.sd/'atmosphere/kips/hoc.kip';hoc.parent.mkdir(parents=True);hoc.write_bytes(b'existing user HOC')
+        original=snapshot(self.sd)
+        self.assertEqual(self.status()['loader_kind'],'stock')
+        self.run_driver('install');entry=self.sd/'bootloader/ini/fextendo-patch.ini';standard=entry.read_text()
+        self.assertIn('Standard loader; no HOC.',standard);self.assertEqual(standard.count('kip1='),1)
+        self.assertFalse(self.status(env={'FXP_LOADER':'hoc'})['installed'])
+        self.run_driver('install',env={'FXP_LOADER':'hoc'})
+        self.assertTrue(self.status()['installed']);self.assertEqual(self.status()['loader_kind'],'hoc')
+        self.assertNotEqual(entry.read_text(),standard)
+        self.run_driver('install',env={'FXP_LOADER':'stock'})
+        self.assertTrue(self.status()['installed']);self.assertEqual(self.status()['loader_kind'],'stock')
+        for path,digest in original.items():self.assertEqual(snapshot(self.sd)[path],digest)
+    def test_custom_revision_fresh_installs_both_loaders(self):
+        p=self.sd/'atmosphere/package3';data=bytearray(p.read_bytes());struct.pack_into('<I',data,60,0xabcdef01);p.write_bytes(data)
+        for loader in ['stock','hoc']:
+            env={'FXP_LOADER':loader};s=self.status(env=env)
+            self.assertTrue(s['ready']);self.assertFalse(s['revision_matches'])
+            self.run_driver('install',env=env);self.assertTrue(self.status(env=env)['installed'])
+    def test_195_selects_its_own_kernel_and_both_loaders(self):
+        # Exercise the captured user/official package header and declared size.
+        # The installer only reads this header; remaining fixture bytes are zero.
+        audit=json.loads((ROOT/'provenance/ams-1.9.5/package3-audit.json').read_text())
+        p=self.sd/'atmosphere/package3';p.write_bytes(bytes.fromhex(audit['header_hex']))
+        with p.open('r+b') as f:f.truncate(audit['bytes'])
+        before=snapshot(self.sd)
+        for kind in ['stock','hoc']:
+            env={'FXP_RUNNING_AMS':'1.9.5','FXP_RUNNING_HOS':'20.5.0','FXP_LOADER':kind}
+            status=self.status(env=env)
+            self.assertTrue(status['ready']);self.assertTrue(status['revision_matches'])
+            self.assertEqual(status['kernel'],'mesosphere-1.9.5.bin')
+            self.assertEqual(status['loader'],f'loader-{kind}-1.9.5-auto-v1.3.0.kip')
+            self.run_driver('install',env=env)
+            reopened=self.status(env={'FXP_RUNNING_AMS':'1.9.5','FXP_RUNNING_HOS':'20.5.0'})
+            self.assertTrue(reopened['installed']);self.assertEqual(reopened['loader_kind'],kind)
+        for name,digest in before.items(): self.assertEqual(snapshot(self.sd)[name],digest)
+    def test_195_does_not_advertise_other_19_versions(self):
+        p=self.sd/'atmosphere/package3';data=bytearray(p.read_bytes())
+        for patch in [0,4,6]:
+            data[57:60]=bytes([patch,9,1]);p.write_bytes(data)
+            self.assertFalse(self.status(env={'FXP_RUNNING_AMS':f'1.9.{patch}'})['ready'])
+    def test_submitted_112_revision_is_informational(self):
+        audit=json.loads((ROOT/'provenance/ams-1.12.0/submitted-package3-audit.json').read_text())
+        self.assertEqual(audit['revision'],'085dde46')
+        p=self.sd/'atmosphere/package3';p.write_bytes(bytes.fromhex(audit['header_hex']))
+        with p.open('r+b') as f:f.truncate(audit['bytes'])
+        before=snapshot(self.sd)
+        for kind in ['stock','hoc']:
+            env={'FXP_RUNNING_AMS':'1.12.0','FXP_RUNNING_HOS':'23.0.0','FXP_LOADER':kind}
+            status=self.status(env=env)
+            self.assertTrue(status['ready']);self.assertFalse(status['revision_matches'])
+            self.assertEqual(status['revision'],'085dde46')
+            self.assertEqual(status['kernel'],'mesosphere-1.12.0.bin')
+            self.run_driver('install',env=env)
+            self.assertTrue(self.status(env=env)['installed'])
+        for name,digest in before.items():self.assertEqual(snapshot(self.sd)[name],digest)
+    def test_variant_updates_merge_by_version_and_loader(self):
+        c=json.loads((ROMFS/'catalog.json').read_text());b=stock_bundle(c);b['version']='1.3.1';b['revision']='abcdef01'
+        c['bundles']=[b];path=self.base/'update.json';path.write_text(json.dumps(c))
+        merged=json.loads(self.run_driver('merge-catalog',path).stdout)
+        self.assertEqual(len(merged),6)
+        self.assertEqual(stock_bundle({'bundles':merged})['revision'],'abcdef01')
+        b['version']='1.3.0';path.write_text(json.dumps(c))
+        self.assertNotEqual(self.run_driver('merge-catalog',path,ok=False).returncode,0)
     def test_firmware_display_is_not_an_atmosphere_version_gate(self):
         # Selection test only: hardware compatibility must be validated separately.
-        for version,rev in [('1.11.2',0x5388824b),('1.12.0',0x28d6a2e1)]:
+        for version,rev in [('1.9.5',0xde9b0200),('1.11.2',0x5388824b),('1.12.0',0x28d6a2e1)]:
             p=self.sd/'atmosphere/package3';data=bytearray(p.read_bytes())
             data[57:60]=bytes(reversed(list(map(int,version.split('.')))))
             struct.pack_into('<I',data,60,rev);p.write_bytes(data)
@@ -163,6 +233,20 @@ class Installer(Fixtures):
                     break
             else:self.fail('Failure sweep did not reach the final mutation')
         (ROOT/'build-host/failure-sweep.json').write_text(json.dumps(counts,indent=2)+'\n')
+    def test_interrupted_loader_change_recovers_old_or_new_pair(self):
+        baseline=self.base/'baseline';fixture(baseline);self.sd=baseline;self.run_driver('install')
+        old=(baseline/'bootloader/ini/fextendo-patch.ini').read_bytes()
+        for step in range(1,95):
+            self.sd=self.base/f'switch-{step}';shutil.copytree(baseline,self.sd)
+            result=self.run_driver('install',env={'FXP_LOADER':'hoc','FXP_FAIL_AFTER':str(step)},ok=False)
+            self.assertIn(result.returncode,[0,99],result.stderr)
+            if self.status()['recovery']:self.run_driver('recover')
+            status=self.status();self.assertTrue(status['installed'])
+            entry=(self.sd/'bootloader/ini/fextendo-patch.ini').read_bytes()
+            if status['loader_kind']=='stock':self.assertEqual(entry,old)
+            else:self.assertEqual(status['loader_kind'],'hoc');self.assertNotEqual(entry,old)
+            if result.returncode==0:break
+        else:self.fail('Loader change sweep did not finish')
     def test_update_repository_config(self):
         default=re.search(r'FXP_DEFAULT_REPOSITORY "([^"]*)"',(ROOT/'include/generated.hpp').read_text()).group(1)
         self.assertEqual(self.run_driver('repository').stdout.strip(),default);p=self.sd/'switch/fextendo-patch/update.ini';p.parent.mkdir(parents=True)
@@ -176,7 +260,9 @@ class Manifest(Fixtures):
         assets=[{'name':'fextendo-patch.json','size':len(content),'digest':'sha256:'+hashlib.sha256(content).hexdigest(),'browser_download_url':'https://github.com/owner/repo/releases/download/v1.0.0/fextendo-patch.json'}]
         for b in c['bundles']:
             for key in ['kernel','loader']:
-                a=b[key];assets.append({'name':a['asset'],'size':a['bytes'],'digest':'sha256:'+a['sha256'],'browser_download_url':'https://github.com/owner/repo/releases/download/v1.0.0/'+a['asset']})
+                a=b[key]
+                if not any(x['name']==a['asset'] for x in assets):
+                    assets.append({'name':a['asset'],'size':a['bytes'],'digest':'sha256:'+a['sha256'],'browser_download_url':'https://github.com/owner/repo/releases/download/v1.0.0/'+a['asset']})
         release={'draft':False,'prerelease':False,'tag_name':'v1.0.0','assets':assets}
         metadata=self.base/'release.json';manifest=self.base/'manifest.json';manifest.write_bytes(content)
         metadata.write_text(json.dumps(release));self.run_driver('release',metadata,manifest)
@@ -184,7 +270,7 @@ class Manifest(Fixtures):
             j=json.loads(json.dumps(release));mutate(j);metadata.write_text(json.dumps(j));self.assertNotEqual(self.run_driver('release',metadata,manifest,ok=False).returncode,0)
     def test_catalog_validation(self):
         original=json.loads((ROMFS/'catalog.json').read_text());path=self.base/'catalog.json'
-        for mutate in [lambda j:j.update(schema=2),lambda j:j.update(min_app_version='9.0.0'),lambda j:j['bundles'][0]['kernel'].update(asset='../loader.kip'),lambda j:j['bundles'][0].update(hoc_configuration='custom'),lambda j:j['bundles'].append(j['bundles'][0]),lambda j:j['bundles'][0]['loader'].update(bytes=999999999)]:
+        for mutate in [lambda j:j.update(schema=2),lambda j:j.update(min_app_version='9.0.0'),lambda j:j['bundles'][0]['kernel'].update(asset='../loader.kip'),lambda j:j['bundles'][0].update(hoc_configuration='custom'),lambda j:j['bundles'].append(j['bundles'][0]),lambda j:j['bundles'][0]['loader'].update(bytes=999999999),lambda j:stock_bundle(j).update(loader_kind='unknown'),lambda j:stock_bundle(j).update(hoc='2.5.1'),lambda j:j['bundles'].append({**stock_bundle(j),'revision':'abcdef01'})]:
             j=json.loads(json.dumps(original));mutate(j);path.write_text(json.dumps(j));self.assertNotEqual(self.run_driver('catalog',path,ok=False).returncode,0)
         path.write_text('{"schema":1,"schema":1}');self.assertNotEqual(self.run_driver('catalog',path,ok=False).returncode,0)
 

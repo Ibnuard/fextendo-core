@@ -1,0 +1,239 @@
+{
+  "atmosphere": "1.12.0",
+  "revision": "085dde46",
+  "release": "https://github.com/Atmosphere-NX/Atmosphere/releases/tag/1.12.0",
+  "archive_sha256": "14451a033935962a9ed800db6918706e372de4370e8d04ea3fc9728a937249e1",
+  "official_package3_sha256": "3cc9d6ca5688e403c36974bced1089397ef8b36a4252f720207ae3d41a6eb557",
+  "user_package3_sha256": "e627e0f6c03020f4a16b264d324c4079604deeca8c6ba322447708f8fe665ead",
+  "user_matches_official": false,
+  "bytes": 8388608,
+  "header_hex": "504b3331200000000000000000700a0007000000cccccccccccccccccccccccc4653533000008000cccccccc400000000f0000000000001700000c0146de5d08",
+  "kip_internal_hashes_valid": true,
+  "components": {
+    "warmboot": {
+      "user": {
+        "offset": 2048,
+        "bytes": 5296,
+        "type": 2,
+        "sha256": "f0272d8f4c0ad140cb0ea4fd91c1682d7cb7c67431bfc373acacd08bff162ab2"
+      },
+      "official": {
+        "offset": 2048,
+        "bytes": 5296,
+        "type": 2,
+        "sha256": "f0272d8f4c0ad140cb0ea4fd91c1682d7cb7c67431bfc373acacd08bff162ab2"
+      },
+      "same_payload": true
+    },
+    "tsec_keygen": {
+      "user": {
+        "offset": 8192,
+        "bytes": 7936,
+        "type": 12,
+        "sha256": "4c04434899d04a364fe9cb98aa98c0a3f0bb5c4ba42deab15e0485e9872519e2"
+      },
+      "official": {
+        "offset": 8192,
+        "bytes": 7936,
+        "type": 12,
+        "sha256": "4c04434899d04a364fe9cb98aa98c0a3f0bb5c4ba42deab15e0485e9872519e2"
+      },
+      "same_payload": true
+    },
+    "exosphere_fatal": {
+      "user": {
+        "offset": 16384,
+        "bytes": 75040,
+        "type": 11,
+        "sha256": "512fc2b1f4cbcd58837e05b1d0791b7a2f913e1ae6cfcdb17e257893486ea9b2"
+      },
+      "official": {
+        "offset": 16384,
+        "bytes": 75040,
+        "type": 11,
+        "sha256": "512fc2b1f4cbcd58837e05b1d0791b7a2f913e1ae6cfcdb17e257893486ea9b2"
+      },
+      "same_payload": true
+    },
+    "exosphere": {
+      "user": {
+        "offset": 294912,
+        "bytes": 40756,
+        "type": 1,
+        "sha256": "28a48602bca636e23067c6ec98c3589c631be6341c319f2df446dd8f7e41002c"
+      },
+      "official": {
+        "offset": 294912,
+        "bytes": 40756,
+        "type": 1,
+        "sha256": "4187909255db6379ebb148d797c38fefbaf35d7c3bce3db7d5cfe4f61d86e3c7"
+      },
+      "same_payload": false
+    },
+    "mesosphere": {
+      "user": {
+        "offset": 352256,
+        "bytes": 684032,
+        "type": 10,
+        "sha256": "1380d0422302d88fa7defdc377c6a8a8ceea7e7792d0d708ea0afeb0b98d391f"
+      },
+      "official": {
+        "offset": 352256,
+        "bytes": 684032,
+        "type": 10,
+        "sha256": "83c44d7943f5d15b1da74f233933c759da1472007dc6a678704eb295c0ab3357"
+      },
+      "same_payload": false
+    },
+    "fusee": {
+      "user": {
+        "offset": 8126464,
+        "bytes": 112192,
+        "type": 0,
+        "sha256": "59e12a8458a5ce17817d3487d0d8d44e78f223958809d15d71f5b44babb5bddb"
+      },
+      "official": {
+        "offset": 8126464,
+        "bytes": 112064,
+        "type": 0,
+        "sha256": "6559017e4df5ac418ce09fb347c32d071649f8b6d3d4bac9a874505fc8bed1bd"
+      },
+      "same_payload": false
+    },
+    "rebootstub": {
+      "user": {
+        "offset": 8257536,
+        "bytes": 1040,
+        "type": 3,
+        "sha256": "6cd5b1ae36b0feddd87c9ee0fa620d9e5d996e5357420a4285393d1c5aa16822"
+      },
+      "official": {
+        "offset": 8257536,
+        "bytes": 1040,
+        "type": 3,
+        "sha256": "6cd5b1ae36b0feddd87c9ee0fa620d9e5d996e5357420a4285393d1c5aa16822"
+      },
+      "same_payload": true
+    },
+    "emummc": {
+      "user": {
+        "offset": 1048576,
+        "bytes": 159708,
+        "type": 8,
+        "sha256": "188617b5647d3647914c8fe66da1ce8218c788f535bf2d1ca799a837a18ab60b"
+      },
+      "official": {
+        "offset": 1048576,
+        "bytes": 159708,
+        "type": 8,
+        "sha256": "b6b4c151b90278a5e8b4f9658bc325b13605312580d714312bb3c96236aa45bf"
+      },
+      "same_payload": false
+    },
+    "Loader": {
+      "user": {
+        "offset": 1208288,
+        "bytes": 190600,
+        "type": 6,
+        "sha256": "9775629d4fa6fdc7dec47e1bdf2552602e6e7a64ba6886a48fc236a97d293e85"
+      },
+      "official": {
+        "offset": 1208288,
+        "bytes": 190612,
+        "type": 6,
+        "sha256": "92f34a795aa6f8cfaa2c888e9357f05fbc50da6ede6a34de0a58411eb546e0bc"
+      },
+      "same_payload": false
+    },
+    "NCM": {
+      "user": {
+        "offset": 1398896,
+        "bytes": 174608,
+        "type": 6,
+        "sha256": "ea2f9afa76d1f33d7d6565a39bb7026f236bf6a47e5d21e956d49dff2bdec3c6"
+      },
+      "official": {
+        "offset": 1398912,
+        "bytes": 174612,
+        "type": 6,
+        "sha256": "90fcef922c3d23ca18e43d2fa59803f2a268ad73a5dd301fa06376fcd128ec6e"
+      },
+      "same_payload": false
+    },
+    "ProcessManager": {
+      "user": {
+        "offset": 1573504,
+        "bytes": 49340,
+        "type": 6,
+        "sha256": "dad04cd234394a87ebf2a9ce176758633d6829ce6ea59b1857802a72b5237a00"
+      },
+      "official": {
+        "offset": 1573536,
+        "bytes": 49344,
+        "type": 6,
+        "sha256": "6a2335527474bdf24d06fb4b24f92f655cffb0a8b5eb8109247f586da92b9837"
+      },
+      "same_payload": false
+    },
+    "sm": {
+      "user": {
+        "offset": 1622848,
+        "bytes": 31960,
+        "type": 6,
+        "sha256": "94320c66de98662f0a4001467c1c1ad0ed7cad9009e72cbf6051908483ce706e"
+      },
+      "official": {
+        "offset": 1622880,
+        "bytes": 31968,
+        "type": 6,
+        "sha256": "2faeaa7b7afb9d0ab9ad5d5c823169db6936d00ac76b8358170891f4cc722785"
+      },
+      "same_payload": false
+    },
+    "boot": {
+      "user": {
+        "offset": 1654816,
+        "bytes": 769512,
+        "type": 6,
+        "sha256": "2a54cbfafd6c3e33c3c1d167426cba3adc1fd96c1b679f73a7f0da2672f9b812"
+      },
+      "official": {
+        "offset": 1654848,
+        "bytes": 271096,
+        "type": 6,
+        "sha256": "cd8fd266a40c70d11b582bac001f7786fe4bedf6fc310cb7562411d123f83e98"
+      },
+      "same_payload": false
+    },
+    "spl": {
+      "user": {
+        "offset": 2424336,
+        "bytes": 52672,
+        "type": 6,
+        "sha256": "6e6bede011dc5b395d249e8170126fd6a7dd46b47ef0a47a288d06aa5a76837f"
+      },
+      "official": {
+        "offset": 1925952,
+        "bytes": 52672,
+        "type": 6,
+        "sha256": "9e4b33e5facfaf508f93f2f4ac5846695734398ce04a25e1ecad504315479c5f"
+      },
+      "same_payload": false
+    },
+    "ams_mitm": {
+      "user": {
+        "offset": 2477008,
+        "bytes": 436644,
+        "type": 6,
+        "sha256": "af3809d57ac4fb523328f4c3214e41344aad90f17c65afd539ac6cdd1473ae18"
+      },
+      "official": {
+        "offset": 1978624,
+        "bytes": 400896,
+        "type": 6,
+        "sha256": "6205e253f185af55e86ed10abab3d91cbe7415505ef71956d490afd775a505d4"
+      },
+      "same_payload": false
+    }
+  }
+}

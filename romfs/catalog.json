@@ -2,8 +2,8 @@
   "schema": 1,
   "application": "fextendo-patch",
   "abi": "fxtmem-v1",
-  "min_app_version": "1.0.0",
-  "catalog_version": "1.2.0",
+  "min_app_version": "1.3.0",
+  "catalog_version": "1.3.0",
   "bundles": [
     {
       "version": "1.1.0",
@@ -39,6 +39,81 @@
         "asset": "loader-hoc-1.12.0-auto-v1.2.0.kip",
         "bytes": 428964,
         "sha256": "b61f93225ca36355fc55ae4deaf3f577f77ad0bb7c07a0a382762ca54df32b56"
+      }
+    },
+    {
+      "version": "1.3.0",
+      "atmosphere": "1.11.2",
+      "revision": "5388824b",
+      "hoc": "",
+      "hoc_configuration": "not-applicable",
+      "tested_hos": "22.5.0",
+      "kernel": {
+        "asset": "mesosphere-1.11.2.bin",
+        "bytes": 679936,
+        "sha256": "29ac80dcc6b7c909243dac1f7b1272e4eeb44882410c8c8032f7b9671a5f1d26"
+      },
+      "loader": {
+        "asset": "loader-stock-1.11.2-auto-v1.3.0.kip",
+        "bytes": 163864,
+        "sha256": "cd6fa138895d8adccbb1508643e2c4a785d9a7f95d570e9d65ebb35eb4263d9d"
+      },
+      "loader_kind": "stock"
+    },
+    {
+      "version": "1.3.0",
+      "atmosphere": "1.12.0",
+      "revision": "28d6a2e1",
+      "hoc": "",
+      "hoc_configuration": "not-applicable",
+      "tested_hos": "23.0.0",
+      "kernel": {
+        "asset": "mesosphere-1.12.0.bin",
+        "bytes": 684032,
+        "sha256": "f46c6f20cd66a229a4746481b09968a1a14e5784e658dd4f42fe0ecb8976c92c"
+      },
+      "loader": {
+        "asset": "loader-stock-1.12.0-auto-v1.3.0.kip",
+        "bytes": 191252,
+        "sha256": "630c1845f4fc21f91cb1dc74a948f9954522507cf5745d7950de5626d38a0116"
+      },
+      "loader_kind": "stock"
+    },
+    {
+      "version": "1.3.0",
+      "atmosphere": "1.9.5",
+      "revision": "de9b0200",
+      "hoc": "",
+      "tested_hos": "20.5.0",
+      "hoc_configuration": "not-applicable",
+      "loader_kind": "stock",
+      "kernel": {
+        "asset": "mesosphere-1.9.5.bin",
+        "bytes": 679936,
+        "sha256": "b2e66fe90ab2c581ca52da3437d4ea2c22bf5df9d41911958767442639af6b9e"
+      },
+      "loader": {
+        "asset": "loader-stock-1.9.5-auto-v1.3.0.kip",
+        "bytes": 126192,
+        "sha256": "48b0250439b3cf460faa625fa2a402d521f84730fed7ff002c497ffb8d4120bc"
+      }
+    },
+    {
+      "version": "1.3.0",
+      "atmosphere": "1.9.5",
+      "revision": "de9b0200",
+      "hoc": "2.5.1",
+      "tested_hos": "20.5.0",
+      "hoc_configuration": "official-release-default",
+      "kernel": {
+        "asset": "mesosphere-1.9.5.bin",
+        "bytes": 679936,
+        "sha256": "b2e66fe90ab2c581ca52da3437d4ea2c22bf5df9d41911958767442639af6b9e"
+      },
+      "loader": {
+        "asset": "loader-hoc-1.9.5-auto-v1.3.0.kip",
+        "bytes": 315884,
+        "sha256": "d89897f377bfd56315248f70fa6ff87f4d73695d9562f8568aec8f3a99e59a83"
       }
     }
   ]

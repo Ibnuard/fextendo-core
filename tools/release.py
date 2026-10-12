@@ -3,7 +3,7 @@ from pathlib import Path
 import argparse, hashlib, json, re, shutil, struct, subprocess, tarfile
 
 ROOT=Path(__file__).resolve().parents[1]
-VERSION='1.2.0'
+VERSION='1.3.0'
 def sha(data):return hashlib.sha256(data).hexdigest()
 def inspect_nro(path, full_romfs=True):
     data=path.read_bytes()
@@ -47,7 +47,7 @@ def release(output, assets_output, copy_only=False):
     shutil.copytree(ROOT/'docs',output/'docs',dirs_exist_ok=True)
     receipt['sources']={str(p.relative_to(ROOT)).replace('\\','/'):sha(p.read_bytes())
                         for folder in ['source','include','tools','tests'] for p in (ROOT/folder).rglob('*') if p.is_file() and '__pycache__' not in str(p)}
-    receipt['hardware_validation']='Atmosphere 1.11.2 payloads unchanged. The new Atmosphere 1.12.0 kernel/HOC loader port needs Switch boot and gameplay validation; host tests do not certify a firmware range.'
+    receipt['hardware_validation']='Existing kernels and HOC payloads unchanged. Standard 1.11.2 reuses the sealed loader; the new 1.9.5 pair, Standard 1.12.0 and version-based acceptance need Switch boot/gameplay validation. The NRO updater and its recovery need an on-device update test. Host tests do not certify all custom builds or firmware combinations.'
     commit=subprocess.run(['git','rev-parse','HEAD'],cwd=ROOT,capture_output=True,text=True)
     receipt['source_commit']=commit.stdout.strip() if commit.returncode==0 else None
     status=subprocess.run(['git','status','--porcelain'],cwd=ROOT,capture_output=True,text=True)
@@ -90,5 +90,5 @@ def release(output, assets_output, copy_only=False):
     print(json.dumps(receipt|{'sources':len(receipt['sources']),'copy_ready':str(output)},indent=2))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--output',type=Path,default=ROOT/'dist/FEXTendo-Patch-v1.2.0');p.add_argument('--assets-output',type=Path,default=ROOT/'dist/release-assets');p.add_argument('--copy-only',action='store_true');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--output',type=Path,default=ROOT/'dist/FEXTendo-Patch-v1.3.0');p.add_argument('--assets-output',type=Path,default=ROOT/'dist/release-assets');p.add_argument('--copy-only',action='store_true');a=p.parse_args()
     release(a.output,a.assets_output,a.copy_only)

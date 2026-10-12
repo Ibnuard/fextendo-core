@@ -1,0 +1,11 @@
+{
+  "atmosphere": "1.9.5",
+  "revision": "de9b0200",
+  "release": "https://github.com/Atmosphere-NX/Atmosphere/releases/tag/1.9.5",
+  "archive_sha256": "12d6035f3420ccb82c6ffd1e673acc4030abe290c105b3d90b7211b707eab2ae",
+  "official_package3_sha256": "b7d595469a681218c34adde1c355253babf86b34d29e2f411d2235f690f65076",
+  "user_package3_sha256": "b7d595469a681218c34adde1c355253babf86b34d29e2f411d2235f690f65076",
+  "user_matches_official": true,
+  "bytes": 8388608,
+  "header_hex": "504b3331200000000000000000500a0007000000cccccccccccccccccccccccc4653533000008000cccccccc400000000f000000000005140005090100029bde"
+}

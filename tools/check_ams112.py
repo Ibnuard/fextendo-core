@@ -3,6 +3,7 @@ import argparse
 import json
 from pathlib import Path
 import subprocess
+import hashlib
 from build_ams112 import ROOT, OLD, REVISION, sha
 
 
@@ -26,10 +27,15 @@ def main():
     tree, out = a.tree.resolve(), a.output.resolve()
     receipt = json.loads((out/'build.json').read_text())
     assert receipt['revision'] == REVISION and not receipt['hardware_tested']
-    for name, digest in receipt['prepared']['files'].items():
-        assert sha(tree/name) == digest, 'Prepared source changed: '+name
-    for name, digest in receipt['files'].items():
-        assert sha(out/name) == digest
+    if receipt.get('loader_kind')=='stock':
+        diff=subprocess.check_output(['git','-C',str(tree),'diff','--binary','HEAD'])
+        assert hashlib.sha256(diff).hexdigest()==receipt['patch_sha256']
+        assert sha(out/'loader-stock-1.12.0-auto-v1.3.0.kip')==receipt['payload_sha256']
+    else:
+        for name, digest in receipt['prepared']['files'].items():
+            assert sha(tree/name) == digest, 'Prepared source changed: '+name
+        for name, digest in receipt['files'].items():
+            assert sha(out/name) == digest
     svc = tree/'libraries/libvapours/include/vapours/svc'
     loader = tree/'stratosphere/loader/source/ldr_process_creation.cpp'
     page = tree/'libraries/libmesosphere/source/kern_k_page_table_base.cpp'

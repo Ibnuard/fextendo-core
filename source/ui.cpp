@@ -54,6 +54,7 @@ void Ui::wrapped(int x,int y,int w,const std::string& s,int face,uint32_t c,int 
 }
 void Ui::image(int x,int y,int w,int h,const Bytes& b){for(int j=0;j<h;j++)for(int i=0;i<w;i++){auto* p=b.data()+(j*w+i)*4;pixel(x+i,y+j,rgb(p[0],p[1],p[2]),p[3]);}}
 int Ui::hit(int x,int y){if(y>=548&&y<616){if(x>=60&&x<442)return 0;if(x>=458&&x<840)return 1;if(x>=856&&x<1220)return 2;}return -1;}
+int Ui::loaderHit(int x,int y){if(y>=444&&y<503){if(x>=60&&x<420)return 0;if(x>=438&&x<798)return 1;}return -1;}
 void Ui::draw(uint32_t* buffer,int pitch,const View& v) {
     pixels=buffer;stride=pitch;
     rect(0,0,1280,720,rgb(9,16,26));rect(0,0,1280,112,rgb(12,22,35));
@@ -70,12 +71,18 @@ void Ui::draw(uint32_t* buffer,int pitch,const View& v) {
     round(820,174,400,336,18,rgb(16,27,40));
     text(846,198,"YOUR CONSOLE",3,Muted);
     auto row=[&](int y,const std::string& k,const std::string& value){text(846,y,k,0,Muted);std::string shortValue=value;if(width(shortValue,0)>184)shortValue=shortValue.substr(0,17)+"...";text(1192-width(shortValue,0),y,shortValue,0,White);};
-    row(244,"Atmosphere",v.status.running);row(285,"On SD",v.status.disk);row(326,"System",v.status.hos);row(367,"emuMMC",v.status.emummc);
-    rect(846,410,348,1,rgb(42,56,74));text(846,429,"PATCH / HOC DEFAULTS",3,Muted);
-    text(846,459,v.status.supported?"v"+v.status.bundle.version+"  /  HOC "+v.status.bundle.hoc:"No matching bundle",1,White);
-    text(86,425,"INSTALLATION",3,Muted);text(86,451,v.status.installation,1,White);
-    text(86,488,"Activation requires a reboot through Hekate.",3,Muted);
-    std::string labels[]={v.status.recovery?"Recover installation":v.status.installed?"Already installed":"Install patch","Check update","Refresh status"};
+    row(239,"Atmosphere",v.status.running);row(271,"On SD",v.status.disk);row(303,"Revision",v.status.revision.empty()?"Unknown":v.status.revision);row(335,"System",v.status.hos);row(367,"emuMMC",v.status.emummc);
+    rect(846,410,348,1,rgb(42,56,74));text(846,426,"PATCH / INSTALLATION",3,Muted);
+    text(846,452,v.status.supported?"v"+v.status.bundle.version+" / "+(v.status.loaderKind=="stock"?"Standard":"HOC"):"No matching bundle",1,White);
+    text(846,485,v.status.installation,3,Muted);
+    text(60,416,"LOADER",3,Muted);text(612,416,"Y  Change loader",3,Muted);
+    for(int i=0;i<2;i++){
+        int x=i==0?60:438;bool selected=(v.status.loaderKind=="stock")== (i==0);
+        round(x,444,360,59,10,selected?Blue:rgb(30,44,61));
+        text(x+20,459,i==0?"Standard / sys-clk":"HOC / official defaults",0,White);
+    }
+    text(60,517,"Reboot through Hekate after installing.",3,Muted);
+    std::string labels[]={v.status.recovery?"Recover installation":v.status.installed?"Already installed":"Install patch",v.appUpdateAvailable?"Update app":"Check update","Refresh status"};
     for(int i=0;i<3;i++){
         int x=i==0?60:i==1?458:856,w=i==2?364:382;
         bool disabled=i==0&&!v.status.recovery&&(!v.status.ready||v.status.installed);
@@ -92,7 +99,7 @@ void Ui::draw(uint32_t* buffer,int pitch,const View& v) {
         text(280,194,v.about?"FEXTendo Patch":v.title,1,White);
         rect(280,237,720,1,rgb(50,65,84));
         if(v.about){
-            wrapped(280,258,716,"A separate boot environment for FEXTendo runtimes. Kernel and loader patches are matched to Atmosphere and verified with SHA-256. HOC uses its official defaults.",0,Muted,4);
+            wrapped(280,258,716,"Kernel and loader patches are matched to the Atmosphere version and verified with SHA-256. Standard works without HOC; existing sys-clk settings are kept. HOC is optional and uses official defaults.",0,Muted,4);
             wrapped(280,378,716,"After installing, reboot to Hekate > More configs > FEXTendo Patch (emuMMC). Existing boot configurations and game folders stay separate.",0,Muted,3);
             text(280,486,"Credits: Atmosphere / HOC / libnx / FEXTendo",3,Muted);
             text(280,532,"B  Close",0,White);
@@ -100,11 +107,11 @@ void Ui::draw(uint32_t* buffer,int pitch,const View& v) {
             wrapped(280,266,716,v.progress,0,White,4);round(280,400,720,10,5,rgb(43,57,75));
             if(v.percent>0)round(280,400,std::max(12,720*v.percent/100),10,5,Blue);
             text(280,453,"Keep the SD card connected until this operation finishes.",0,Muted);
-            text(280,532,"B  Cancel before boot entry is committed",0,White);
+            text(280,532,v.finishing?"Finishing update - keep the app open":"B  Cancel before changes are committed",0,White);
         }else{
             wrapped(280,264,716,v.detail,0,Muted,8);
-            if(v.confirm){round(279,507,258,46,10,rgb(26,78,130));text(298,518,"A  Install patch",0,White);text(582,518,"B  Cancel",0,Muted);}
-            else text(280,532,"A / B  Close",0,v.success?Green:White);
+            if(v.confirm){round(279,507,258,46,10,rgb(26,78,130));text(298,518,v.appConfirm?"A  Update app":"A  Install patch",0,White);text(582,518,"B  Cancel",0,Muted);}
+            else text(280,532,v.exitRequired?"A  Exit app":"A / B  Close",0,v.success?Green:White);
         }
     }
 }

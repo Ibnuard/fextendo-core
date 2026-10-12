@@ -39,6 +39,7 @@ jobs:
           path: |
             build-host/previews/*.png
             build-host/failure-sweep.json
+            build-host/app-update-failure-sweep.json
           if-no-files-found: error
           retention-days: 30
   switch-build:

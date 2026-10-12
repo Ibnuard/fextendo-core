@@ -36,10 +36,15 @@ Required patch assets:
 
 ```text
 fextendo-patch.json
+mesosphere-1.9.5.bin
+loader-stock-1.9.5-auto-v1.3.0.kip
+loader-hoc-1.9.5-auto-v1.3.0.kip
 mesosphere-1.11.2.bin
 loader-hoc-1.11.2-auto-v1.1.0.kip
 mesosphere-1.12.0.bin
 loader-hoc-1.12.0-auto-v1.2.0.kip
+loader-stock-1.11.2-auto-v1.3.0.kip
+loader-stock-1.12.0-auto-v1.3.0.kip
 ```
 
 For bundle 1.1.0, the loader asset is
@@ -55,6 +60,8 @@ HOC settings and identical kernel. This does not modify any mounted SD card.
 Do not run that historical importer over the multi-version catalog. For 1.12.0,
 use `build_ams112.py`, `check_ams112.py`, then `import_ams112.py`; see
 [compatibility](COMPATIBILITY.md). That import retains the complete 1.11.2 bundle.
+For 1.9.5, use `build_ams195.py`, `check_ams195.py`, then `import_ams195.py`;
+the importer preserves all existing versions and adds both loader variants.
 
 Also distribute `FEXTendo-Patch.nro`, `FEXTendo-Patch-source.tar.gz`,
 `SHA256SUMS.txt`, `build-receipt.json`, `toolchain.txt`, and the README.
@@ -68,7 +75,8 @@ an archive in place of a kernel or loader: the NRO downloads these exact raw ass
 `fextendo-patch`, ABI `fxtmem-v1`, and `min_app_version`. Each bundle declares:
 
 - patch version, exact Atmosphere semantic version and eight-digit source revision;
-- HOC version, `hoc_configuration=official-release-default`, reference HOS (`tested_hos` is a legacy field name, not a tested firmware range);
+- loader kind: missing means legacy `hoc`; `stock` uses an empty HOC version and `hoc_configuration=not-applicable`;
+- for HOC: version and `hoc_configuration=official-release-default`; reference HOS (`tested_hos` is a legacy field name, not a tested firmware range);
 - kernel and loader asset name, byte length and SHA-256.
 
 Adding a new Atmosphere version means **rebuilding and testing its matching
@@ -77,9 +85,23 @@ adding its bundle to the catalog. Do not add unsupported versions as aliases of
 an existing binary. Different games using ABI v1 do not require different bundles.
 
 Increase the bundle version whenever its metadata or binary contents change.
-Same-version replacements and duplicates for an Atmosphere version/revision are
+Same-version replacements and duplicates for an Atmosphere version/loader kind are
 rejected. Raise `min_app_version` only for a real installer/schema requirement;
-NRO updates are manual. The UI reports when a newer app is required.
+From app 1.3.0, Check update offers an in-app NRO upgrade using the stable release
+tag (`vX.Y.Z`) and `FEXTendo-Patch.nro` asset. The asset must have a GitHub SHA-256
+digest and matching NACP title/version. App upgrades are checked before rejecting
+a catalog that needs a newer parser. Users on pre-1.3.0 NROs need one manual copy.
+Catalogs with Standard/HOC alternatives require `min_app_version=1.3.0` so old
+installers cannot select the wrong variant. Legacy HOC bundle IDs and payloads
+are unchanged. Commit revisions are provenance, not an install gate in 1.3.0.
+
+The NRO transaction writes a verified download next to the actual launched app.
+RomFS is unmounted before publication. FAT cannot atomically replace an existing
+file with rename, so a checksummed journal and launchable `.recovery.nro` preserve
+the previous executable across the two renames. No cancellation is accepted once
+publication begins. Startup recovery validates old/new hashes before cleanup;
+unexpected target or backup changes stop recovery without overwriting them.
+The app exits after publication and does not read the new RomFS while old code runs.
 
 ## Trust and release operations
 

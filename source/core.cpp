@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "core.hpp"
+#include "storage.hpp"
 #include "generated.hpp"
 #include <algorithm>
 #include <array>
@@ -21,7 +22,7 @@
 
 namespace fxp {
 void require(bool ok, const std::string& error) { if (!ok) throw std::runtime_error(error); }
-void Progress::check() const { require(!cancelled || !cancelled(), "Cancelled. Existing boot entry kept."); }
+void Progress::check() const { require(!cancelled || !cancelled(), "Cancelled. Installed files kept."); }
 void Progress::update(const std::string& text, int p) const { if(report) report(text,p); }
 void mutationPoint() {
 #ifdef FXP_TEST
@@ -103,7 +104,7 @@ static void syncParent(const std::string& p) {
 #endif
     syncSd();
 }
-static void writeFile(const std::string& p,const Bytes& data) {
+void writeFile(const std::string& p,const Bytes& data) {
     safeParents(p,true); if(exists(p)) require(false,"Staging file already exists: "+p);
     FILE* f=fopen(p.c_str(),"wb");require(f!=nullptr,"Cannot write: "+p);
     bool ok=fwrite(data.data(),1,data.size(),f)==data.size();
@@ -113,13 +114,13 @@ static void writeFile(const std::string& p,const Bytes& data) {
     require(ok,"SD write failed: "+p);mutationPoint();syncParent(p);
 }
 static Bytes bytes(const std::string& s){return Bytes(s.begin(),s.end());}
-static void moveFile(const std::string& from,const std::string& to) {
+void moveFile(const std::string& from,const std::string& to) {
     require(exists(from),"Missing staged file.");safeParents(to,true);
     require(!exists(to),"Refusing to replace an unverified file: "+to);
     require(!rename(from.c_str(),to.c_str()),"SD rename failed. Reopen installer to recover.");
     mutationPoint();syncParent(to);
 }
-static void removeFile(const std::string& p) {
+void removeFile(const std::string& p) {
     if(exists(p)){require(!unlink(p.c_str()),"Cannot remove staging file: "+p);mutationPoint();syncParent(p);}
 }
 static unsigned parseVersion(const std::string& s) {
@@ -151,9 +152,14 @@ static Asset parseAsset(const Json& j) {
 }
 static Bundle parseBundle(const Json& j) {
     Bundle b;b.version=j.at("version");b.atmosphere=j.at("atmosphere");b.revision=j.at("revision");b.hoc=j.at("hoc");b.hos=j.at("tested_hos");
-    parseVersion(b.version);parseVersion(b.atmosphere);parseVersion(b.hoc);parseVersion(b.hos);
+    b.loaderKind=j.value("loader_kind",std::string("hoc"));
+    require(b.loaderKind=="stock"||b.loaderKind=="hoc","Unknown loader kind.");
+    parseVersion(b.version);parseVersion(b.atmosphere);parseVersion(b.hos);
     require(hexString(b.revision,8),"Invalid Atmosphere source revision.");
-    require(j.at("hoc_configuration")=="official-release-default","Only official HOC defaults are accepted.");
+    if(b.loaderKind=="hoc") {
+        parseVersion(b.hoc);
+        require(j.at("hoc_configuration")=="official-release-default","Only official HOC defaults are accepted.");
+    } else require(b.hoc.empty()&&j.at("hoc_configuration")=="not-applicable","Standard loader must not contain HOC settings.");
     b.kernel=parseAsset(j.at("kernel"));b.loader=parseAsset(j.at("loader"));
     require(b.kernel.name!=b.loader.name,"Kernel and loader must be separate assets.");return b;
 }
@@ -163,12 +169,26 @@ Catalog parseCatalog(const std::string& text) {
     require(versionCompare(j.at("min_app_version"),AppVersion)<=0,"This catalog needs a newer FEXTendo Patch NRO.");
     c.version=j.at("catalog_version");parseVersion(c.version);
     const auto& list=j.at("bundles");require(list.is_array()&&list.size()>0&&list.size()<=32,"Invalid bundle list.");
-    for(const auto& item:list){Bundle b=parseBundle(item);for(const auto& old:c.bundles)require(b.atmosphere!=old.atmosphere||b.revision!=old.revision,"Duplicate Atmosphere bundle.");c.bundles.push_back(b);}return c;
+    for(const auto& item:list){Bundle b=parseBundle(item);for(const auto& old:c.bundles)require(b.atmosphere!=old.atmosphere||b.loaderKind!=old.loaderKind,"Duplicate Atmosphere/loader bundle.");c.bundles.push_back(b);}return c;
 }
 Json bundleJson(const Bundle& b) {
     auto asset=[](const Asset& a){return Json{{"asset",a.name},{"bytes",a.size},{"sha256",a.hash}};};
-    return {{"version",b.version},{"atmosphere",b.atmosphere},{"revision",b.revision},{"hoc",b.hoc},{"tested_hos",b.hos},
-            {"hoc_configuration","official-release-default"},{"kernel",asset(b.kernel)},{"loader",asset(b.loader)}};
+    Json j={{"version",b.version},{"atmosphere",b.atmosphere},{"revision",b.revision},{"hoc",b.hoc},{"tested_hos",b.hos},
+            {"hoc_configuration",b.loaderKind=="hoc"?"official-release-default":"not-applicable"},{"kernel",asset(b.kernel)},{"loader",asset(b.loader)}};
+    // Preserve the identity of published legacy HOC bundles and installed entries.
+    if(b.loaderKind!="hoc")j["loader_kind"]=b.loaderKind;
+    return j;
+}
+std::string loaderLabel(const Bundle& b){return b.loaderKind=="stock"?"Standard / sys-clk":"HOC "+b.hoc;}
+void mergeCatalog(Catalog& current,const Catalog& update) {
+    Catalog merged=current;
+    for(const auto& fresh:update.bundles) {
+        auto it=std::find_if(merged.bundles.begin(),merged.bundles.end(),[&](const auto& b){return b.atmosphere==fresh.atmosphere&&b.loaderKind==fresh.loaderKind;});
+        if(it==merged.bundles.end())merged.bundles.push_back(fresh);
+        else if(versionCompare(fresh.version,it->version)>0)*it=fresh;
+        else if(versionCompare(fresh.version,it->version)==0)require(bundleId(fresh)==bundleId(*it),"Release changed a published bundle without increasing its version.");
+    }
+    current=std::move(merged);
 }
 std::string bundleId(const Bundle& b){return hash(bytes(bundleJson(b).dump())).substr(0,32);}
 Catalog loadCatalog(const std::string& romfs) {
@@ -191,7 +211,7 @@ static std::string ini(const std::string& text,const std::string& section,const 
 }
 static uint32_t u32(const Bytes& b,size_t p){return b[p]|uint32_t(b[p+1])<<8|uint32_t(b[p+2])<<16|uint32_t(b[p+3])<<24;}
 std::string bootEntry(const std::string& base,const Bundle& b) {
-    return "# Managed by FEXTendo Patch. HOC official defaults.\n# Bundle " + b.version + " / Atmosphere " + b.atmosphere +
+    return std::string("# Managed by FEXTendo Patch. ")+(b.loaderKind=="hoc"?"HOC official defaults.":"Standard loader; no HOC.")+"\n# Bundle " + b.version + " / Atmosphere " + b.atmosphere +
         "\n[FEXTendo Patch (emuMMC)]\nid=fxtpat1\npkg3=atmosphere/package3\nkernel="+base+"/mesosphere.bin\nkip1="+base+
         "/loader.kip\nemummcforce=1\nicon="+base+"/icon.bmp\nlogopath="+base+"/boot.bmp\n";
 }
@@ -216,9 +236,11 @@ static bool verifyPayload(const std::string& root,const std::string& base,const 
            matches(join(root,base+"/boot.bmp"),1536054,FXP_BOOT_HASH);
 }
 bool pending(const std::string& root){return exists(join(root,std::string(StateDir)+"/transaction.json"));}
-Status inspect(const std::string& root,const Environment& env,const Catalog& catalog) {
+Status inspect(const std::string& root,const Environment& env,const Catalog& catalog,const std::string& requested) {
     Status s;s.running=env.atmosphereKnown?env.atmosphere:"Unavailable";s.hos=env.hos;
     try {
+        require(requested=="auto"||requested=="stock"||requested=="hoc","Unknown loader selection.");
+        if(requested!="auto")s.loaderKind=requested;
         if(pending(root)) {s.recovery=true;s.headline="Installation interrupted";s.detail="Select Recover installation before making other changes.";return s;}
         require(env.atmosphereKnown,"Could not read the running Atmosphere version. Launch under Atmosphere.");
         parseVersion(env.atmosphere);
@@ -231,13 +253,16 @@ Status inspect(const std::string& root,const Environment& env,const Catalog& cat
         const std::string base=installedBase(root);Bundle previous;bool havePrevious=false;
         if(!base.empty()&&exists(join(root,base+"/bundle.json"))) {
             previous=parseBundle(parseJson(readText(join(root,base+"/bundle.json"),8192)));
-            havePrevious=base.substr(std::string("atmosphere/fextendo/patch/").size(),32)==bundleId(previous) && previous.atmosphere==s.disk && previous.revision==s.revision;
+            havePrevious=base.substr(std::string("atmosphere/fextendo/patch/").size(),32)==bundleId(previous) && previous.atmosphere==s.disk;
         }
-        for(const auto& b:catalog.bundles) if(b.atmosphere==s.running&&b.revision==s.revision){s.bundle=b;s.supported=true;break;}
-        if(havePrevious&&s.supported&&versionCompare(previous.version,s.bundle.version)==0)
+        if(havePrevious&&requested=="auto")s.loaderKind=previous.loaderKind;
+        for(const auto& b:catalog.bundles) if(b.atmosphere==s.running&&b.loaderKind==s.loaderKind){s.bundle=b;s.supported=true;break;}
+        bool previousSelected=havePrevious&&previous.loaderKind==s.loaderKind;
+        if(previousSelected&&s.supported&&versionCompare(previous.version,s.bundle.version)==0)
             require(bundleId(previous)==bundleId(s.bundle),"Published bundle changed without a version increase. Check the release.");
-        if(havePrevious && (!s.supported||versionCompare(previous.version,s.bundle.version)>0)){s.bundle=previous;s.supported=true;}
-        require(s.supported,"No compatible patch for this Atmosphere build. Select Check update.");
+        if(previousSelected && (!s.supported||versionCompare(previous.version,s.bundle.version)>0)){s.bundle=previous;s.supported=true;}
+        require(s.supported,"No "+s.loaderKind+" patch for Atmosphere "+s.running+". Select Check update.");
+        s.revisionMatches=s.bundle.revision==s.revision;
         if(exists(join(root,"emuMMC/emummc.ini")))s.emummc=ini(readText(join(root,"emuMMC/emummc.ini"),32768),"emummc","enabled")=="1"?"Enabled":"Disabled";
         else s.emummc="Missing";
         require(s.emummc=="Enabled","Enable emuMMC in Hekate before installing this package.");
@@ -247,7 +272,8 @@ Status inspect(const std::string& root,const Environment& env,const Catalog& cat
             s.installed=bundleId(previous)==bundleId(s.bundle);
         } else if(exists(join(root,EntryPath)))s.installation="Needs repair / entry changed";
         s.ready=true;s.headline=s.installed?"Patch installed":"Ready to install";
-        s.detail=s.installed?"Boot Hekate > More configs > FEXTendo Patch (emuMMC).":"A compatible kernel and loader are available for your console.";
+        s.detail=s.installed?"Boot Hekate > More configs > FEXTendo Patch (emuMMC).":"Patch available for this Atmosphere version. Choose a loader below.";
+        if(!s.revisionMatches)s.detail+=" Different source revision detected; version-based installation is allowed.";
     } catch(const std::exception& e){s.headline=s.supported?"Setup needed":"Not supported";s.detail=e.what();}
     return s;
 }
@@ -300,7 +326,7 @@ static void checkBinary(const Bundle& b,const Bytes& kernel,const Bytes& loader)
 void install(const std::string& root,const std::string& romfs,const Environment& env,const Catalog& c,
              const Bundle& b,const Bytes& kernel,const Bytes& loader,const Progress& p) {
     p.check();p.update("Checking compatibility and SHA-256",10);
-    auto s=inspect(root,env,c);require(s.ready&&!s.recovery,s.detail);
+    auto s=inspect(root,env,c,b.loaderKind);require(s.ready&&!s.recovery,s.detail);
     require(bundleId(s.bundle)==bundleId(b),"Selected bundle changed. Refresh status.");
     require(!s.installed,"This patch is already installed.");checkBinary(b,kernel,loader);
     auto icon=read(join(romfs,"boot/fextendo-memory.bmp"),147510),boot=read(join(romfs,"boot/fextendo-boot.bmp"),1536054);
@@ -326,7 +352,7 @@ void install(const std::string& root,const std::string& romfs,const Environment&
     writeFile(join(root,base+"/bundle.json"),bytes(bundleJson(b).dump(2)+"\n"));
     require(verifyPayload(root,base,b),"SD verification failed. Existing entry kept.");p.check();
     // Recheck prerequisites immediately before publishing the new entry.
-    auto fresh=inspect(root,env,c);require(fresh.ready&&bundleId(fresh.bundle)==bundleId(b),"SD setup changed during installation.");
+    auto fresh=inspect(root,env,c,b.loaderKind);require(fresh.ready&&bundleId(fresh.bundle)==bundleId(b)&&fresh.revision==s.revision,"SD setup changed during installation.");
     auto entry=join(root,EntryPath);const bool had=exists(entry);const std::string before=had?digestFile(entry):"";
     const auto text=bootEntry(base,b);writeFile(stagedEntry(root),bytes(text));
     const std::string after=hash(bytes(text));Json j={{"schema",1},{"had_entry",had},{"before",before},{"after",after}};

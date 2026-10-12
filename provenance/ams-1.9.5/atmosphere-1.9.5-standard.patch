@@ -1,0 +1,254 @@
+diff --git a/libraries/libmesosphere/source/kern_k_page_table_base.cpp b/libraries/libmesosphere/source/kern_k_page_table_base.cpp
+index ad42a62..59f2867 100644
+--- a/libraries/libmesosphere/source/kern_k_page_table_base.cpp
++++ b/libraries/libmesosphere/source/kern_k_page_table_base.cpp
+@@ -171,6 +171,13 @@ namespace ams::kern {
+             m_alias_code_region_start             = m_code_region_start;
+             m_alias_code_region_end               = m_code_region_end;
+ 
++            if (ams::svc::fextendo::Requested(flags)) {
++                R_UNLESS(m_address_space_width == 39 && ams::svc::fextendo::CompatibleFlags(flags), svc::ResultInvalidCombination());
++                R_UNLESS(code_address >= ams::svc::fextendo::NativeStart, svc::ResultInvalidAddress());
++                m_code_region_start       = ams::svc::fextendo::NativeStart;
++                m_alias_code_region_start = ams::svc::AddressSmallMap32Start;
++            }
++
+             process_code_start                    = util::AlignDown(GetInteger(code_address), RegionAlignment);
+             process_code_end                      = util::AlignUp(GetInteger(code_address) + code_size, RegionAlignment);
+ 
+diff --git a/libraries/libmesosphere/source/svc/kern_svc_process.cpp b/libraries/libmesosphere/source/svc/kern_svc_process.cpp
+index 6e516a5..c8de01b 100644
+--- a/libraries/libmesosphere/source/svc/kern_svc_process.cpp
++++ b/libraries/libmesosphere/source/svc/kern_svc_process.cpp
+@@ -100,6 +100,12 @@ namespace ams::kern::svc {
+             /* Validate that the parameter flags are valid. */
+             R_UNLESS((params.flags & ~ams::svc::CreateProcessFlag_All) == 0, svc::ResultInvalidEnumValue());
+ 
++            /* Validate the descriptor independently of the userland loader. */
++            if (ams::svc::fextendo::Requested(params.flags)) {
++                R_UNLESS(ams::svc::fextendo::CompatibleFlags(params.flags), svc::ResultInvalidCombination());
++                R_UNLESS(params.code_address >= ams::svc::fextendo::NativeStart, svc::ResultInvalidAddress());
++            }
++
+             /* Validate that 64-bit process is okay. */
+             const bool is_64_bit = (params.flags & ams::svc::CreateProcessFlag_Is64Bit) != 0;
+             if constexpr (sizeof(void *) < sizeof(u64)) {
+diff --git a/libraries/libstratosphere/include/stratosphere/svc/svc_stratosphere_shims.hpp b/libraries/libstratosphere/include/stratosphere/svc/svc_stratosphere_shims.hpp
+index d68a56f..e3de7b4 100644
+--- a/libraries/libstratosphere/include/stratosphere/svc/svc_stratosphere_shims.hpp
++++ b/libraries/libstratosphere/include/stratosphere/svc/svc_stratosphere_shims.hpp
+@@ -388,7 +388,10 @@
+                 }
+ 
+                 ALWAYS_INLINE Result GetDebugEvent(::ams::svc::UserPointer< ::ams::svc::lp64::DebugEventInfo *> out_info, ::ams::svc::Handle debug_handle) {
+-                    R_RETURN(::svcGetDebugEvent(out_info.GetPointerUnsafe(), debug_handle));
++                    static_assert(sizeof(::ams::svc::lp64::DebugEventInfo) == sizeof(::DebugEventInfo));
++                    static_assert(alignof(::ams::svc::lp64::DebugEventInfo) == alignof(::DebugEventInfo));
++                    static_assert(offsetof(::ams::svc::lp64::DebugEventInfo, info) == offsetof(::DebugEventInfo, info));
++                    R_RETURN(::svcGetDebugEvent(reinterpret_cast<::DebugEventInfo *>(out_info.GetPointerUnsafe()), debug_handle));
+                 }
+ 
+                 ALWAYS_INLINE Result ContinueDebugEvent(::ams::svc::Handle debug_handle, uint32_t flags, ::ams::svc::UserPointer<const uint64_t *> thread_ids, int32_t num_thread_ids) {
+diff --git a/libraries/libstratosphere/source/hos/hos_version_api.cpp b/libraries/libstratosphere/source/hos/hos_version_api.cpp
+index db3d6f6..511559d 100644
+--- a/libraries/libstratosphere/source/hos/hos_version_api.cpp
++++ b/libraries/libstratosphere/source/hos/hos_version_api.cpp
+@@ -47,7 +47,7 @@ namespace ams::hos {
+         #endif
+ 
+         exosphere::ApiInfo GetExosphereApiInfo(bool allow_approximate) {
+-            exosphere::ApiInfo info;
++            exosphere::ApiInfo info = exosphere::ApiInfo{ util::BitPack64{0} };
+             #if defined(ATMOSPHERE_OS_HORIZON)
+             while (true) {
+                 if (R_SUCCEEDED(GetExosphereApiInfo(std::addressof(info)))) {
+diff --git a/libraries/libvapours/include/vapours/svc/svc_fextendo_memory.hpp b/libraries/libvapours/include/vapours/svc/svc_fextendo_memory.hpp
+new file mode 100755
+index 0000000..ca6f7a5
+--- /dev/null
++++ b/libraries/libvapours/include/vapours/svc/svc_fextendo_memory.hpp
+@@ -0,0 +1,58 @@
++/* SPDX-License-Identifier: MIT
++ * FEXTendo experimental ABI v1. Private to the pinned kernel/loader pair.
++ * This is NOT an upstream Atmosphere NPDM flag or a user configuration option.
++ */
++#pragma once
++#include <cstddef>
++#include <cstdint>
++
++namespace ams::svc::fextendo {
++    constexpr std::uint32_t RequestFlag = UINT32_C(1) << 30;
++    constexpr std::uint64_t NativeStart = UINT64_C(0x100000000);
++    constexpr std::size_t DescriptorSize = 32;
++
++    constexpr std::uint32_t Read32(const unsigned char *p) {
++        return std::uint32_t(p[0]) | (std::uint32_t(p[1]) << 8) |
++               (std::uint32_t(p[2]) << 16) | (std::uint32_t(p[3]) << 24);
++    }
++
++    /* Fixed-size, little-endian ExeFS /fxtmem. Reject unknown extensions rather
++     * than guessing: all reserved bytes must be zero in version 1. */
++    constexpr bool ValidDescriptor(const unsigned char *p, std::size_t size) {
++        if (p == nullptr || size != DescriptorSize) return false;
++        constexpr unsigned char magic[8] = {'F','X','T','M','E','M',0,0};
++        for (std::size_t i = 0; i < 8; ++i) if (p[i] != magic[i]) return false;
++        if (Read32(p + 8) != 1 || Read32(p + 12) != DescriptorSize ||
++            Read32(p + 16) != 1 || Read32(p + 20) != 0) return false;
++        for (std::size_t i = 24; i < DescriptorSize; ++i) if (p[i]) return false;
++        return true;
++    }
++
++    /* ARM64 + 39-bit + application pool only. Constants are checked against the
++     * actual pinned svc enum by static_asserts in the patched shared header. */
++    constexpr bool CompatibleFlags(std::uint32_t flags) {
++        return (flags & 0x0f) == 0x07 && (flags & 0x40) &&
++               !(flags & (0x780 | 0x2000));
++    }
++    constexpr bool Requested(std::uint32_t flags) { return (flags & RequestFlag) != 0; }
++
++    /* Optional /fxtauto contract. Stock and v1 loaders ignore this filename and
++     * retain the NPDM's 32-bit no-alias layout. Only this loader promotes it. */
++    constexpr bool ValidAutomaticDescriptor(const unsigned char *p, std::size_t size) {
++        if (p == nullptr || size != DescriptorSize) return false;
++        constexpr unsigned char magic[8] = {'F','X','T','A','U','T','O',0};
++        for (std::size_t i = 0; i < 8; ++i) if (p[i] != magic[i]) return false;
++        if (Read32(p + 8) != 1 || Read32(p + 12) != DescriptorSize ||
++            Read32(p + 16) != 1 || Read32(p + 20) != 0) return false;
++        for (std::size_t i = 24; i < DescriptorSize; ++i) if (p[i]) return false;
++        return true;
++    }
++    constexpr bool CompatibleAutomaticFlags(std::uint32_t flags) {
++        return (flags & 0x0f) == 0x05 && (flags & 0x40) &&
++               !(flags & (0x780 | 0x2000 | RequestFlag));
++    }
++    constexpr std::uint32_t PromotedFlags(std::uint32_t flags) {
++        return (flags & ~UINT32_C(0x0e)) | 6 | RequestFlag;
++    }
++    constexpr std::uint32_t AutomaticSystemResourcePages = 0x1000; /* 16 MiB */
++}
+diff --git a/libraries/libvapours/include/vapours/svc/svc_types_common.hpp b/libraries/libvapours/include/vapours/svc/svc_types_common.hpp
+index 21ab685..7950cb4 100644
+--- a/libraries/libvapours/include/vapours/svc/svc_types_common.hpp
++++ b/libraries/libvapours/include/vapours/svc/svc_types_common.hpp
+@@ -15,6 +15,7 @@
+  */
+ #pragma once
+ #include <vapours/svc/svc_common.hpp>
++#include <vapours/svc/svc_fextendo_memory.hpp>
+ 
+ namespace ams::kern::svc::impl {
+ 
+@@ -443,6 +444,9 @@ namespace ams::svc {
+         /* 18.x EnableAliasRegionExtraSize. */
+         CreateProcessFlag_EnableAliasRegionExtraSize = (1 << 13),
+ 
++        /* Private FEXTendo ABI; never an NPDM flag. */
++        CreateProcessFlag_FextendoLowWindow = fextendo::RequestFlag,
++
+         /* Mask of all flags. */
+         CreateProcessFlag_All = CreateProcessFlag_Is64Bit                        |
+                                 CreateProcessFlag_AddressSpaceMask               |
+@@ -452,8 +456,19 @@ namespace ams::svc {
+                                 CreateProcessFlag_PoolPartitionMask              |
+                                 CreateProcessFlag_OptimizeMemoryAllocation       |
+                                 CreateProcessFlag_DisableDeviceAddressSpaceMerge |
+-                                CreateProcessFlag_EnableAliasRegionExtraSize,
+-    };
++                                CreateProcessFlag_EnableAliasRegionExtraSize |
++                                CreateProcessFlag_FextendoLowWindow,
++    };
++
++    static_assert(CreateProcessFlag_Is64Bit == 1);
++    static_assert(CreateProcessFlag_AddressSpaceMask == 0x0e);
++    static_assert(CreateProcessFlag_AddressSpace32BitWithoutAlias == 4);
++    static_assert(CreateProcessFlag_AddressSpace64Bit == 6);
++    static_assert(CreateProcessFlag_IsApplication == 0x40);
++    static_assert(CreateProcessFlag_PoolPartitionMask == 0x780);
++    static_assert(CreateProcessFlag_PoolPartitionApplication == 0);
++    static_assert(CreateProcessFlag_EnableAliasRegionExtraSize == 0x2000);
++    static_assert((CreateProcessFlag_All & ~CreateProcessFlag_FextendoLowWindow) == 0x3fff);
+ 
+     /* Debug types. */
+     enum DebugEvent : u32 {
+diff --git a/stratosphere/loader/source/ldr_fextendo_memory.inc b/stratosphere/loader/source/ldr_fextendo_memory.inc
+new file mode 100755
+index 0000000..08fa4cc
+--- /dev/null
++++ b/stratosphere/loader/source/ldr_fextendo_memory.inc
+@@ -0,0 +1,44 @@
++/* SPDX-License-Identifier: MIT
++ * Included inside ams::ldr's anonymous namespace. Code is already mounted;
++ * read the descriptor before ASLR placement or svcCreateProcess.
++ */
++Result ReadFextendoMemoryDescriptor(bool *present, const char *path, bool automatic) {
++    *present = false;
++    fs::FileHandle file;
++    const Result opened = fs::OpenFile(std::addressof(file), path, fs::OpenMode_Read);
++    if (fs::ResultPathNotFound::Includes(opened)) R_SUCCEED();
++    R_TRY(opened);
++    ON_SCOPE_EXIT { fs::CloseFile(file); };
++
++    s64 size = 0;
++    R_TRY(fs::GetFileSize(std::addressof(size), file));
++    R_UNLESS(size == svc::fextendo::DescriptorSize, ldr::ResultInvalidMeta());
++    unsigned char descriptor[svc::fextendo::DescriptorSize];
++    size_t read_size = 0;
++    R_TRY(fs::ReadFile(std::addressof(read_size), file, 0, descriptor, sizeof(descriptor)));
++    R_UNLESS(automatic ? svc::fextendo::ValidAutomaticDescriptor(descriptor, read_size) :
++        svc::fextendo::ValidDescriptor(descriptor, read_size), ldr::ResultInvalidMeta());
++    *present = true;
++    R_SUCCEED();
++}
++
++Result ApplyFextendoMemoryDescriptor(svc::CreateProcessParameter *param) {
++    bool legacy, automatic;
++    R_TRY(ReadFextendoMemoryDescriptor(std::addressof(legacy),
++        ENCODE_ATMOSPHERE_CODE_PATH("/fxtmem"), false));
++    R_TRY(ReadFextendoMemoryDescriptor(std::addressof(automatic),
++        ENCODE_ATMOSPHERE_CODE_PATH("/fxtauto"), true));
++    R_UNLESS(!(legacy && automatic), ldr::ResultInvalidMeta());
++    if (automatic) {
++        R_UNLESS(svc::fextendo::CompatibleAutomaticFlags(param->flags) &&
++            param->system_resource_num_pages == 0, ldr::ResultInvalidMeta());
++        /* This runs before DecideAddressSpaceLayout and svcCreateProcess.
++         * Keep the NPDM stock-compatible; supply the 39-bit resource pool here. */
++        param->flags = svc::fextendo::PromotedFlags(param->flags);
++        param->system_resource_num_pages = svc::fextendo::AutomaticSystemResourcePages;
++    } else if (legacy) {
++        R_UNLESS(svc::fextendo::CompatibleFlags(param->flags), ldr::ResultInvalidMeta());
++        param->flags |= svc::CreateProcessFlag_FextendoLowWindow;
++    }
++    R_SUCCEED();
++}
+diff --git a/stratosphere/loader/source/ldr_process_creation.cpp b/stratosphere/loader/source/ldr_process_creation.cpp
+index 5f6f222..67c7628 100644
+--- a/stratosphere/loader/source/ldr_process_creation.cpp
++++ b/stratosphere/loader/source/ldr_process_creation.cpp
+@@ -27,6 +27,8 @@ namespace ams::ldr {
+ 
+     namespace {
+ 
++        #include "ldr_fextendo_memory.inc"
++
+         /* Convenience defines. */
+         constexpr size_t SystemResourceSizeMax = 0x1FE00000;
+ 
+@@ -483,6 +485,10 @@ namespace ams::ldr {
+                     case svc::CreateProcessFlag_AddressSpace64Bit:
+                         aslr_start = svc::AddressMap39Start;
+                         aslr_size  = svc::AddressMap39Size;
++                        if (svc::fextendo::Requested(out_param->flags)) {
++                            aslr_start = svc::fextendo::NativeStart;
++                            aslr_size  = svc::AddressMap39End - aslr_start;
++                        }
+                         break;
+                     AMS_UNREACHABLE_DEFAULT_CASE();
+                 }
+@@ -645,6 +651,7 @@ namespace ams::ldr {
+             /* Get CreateProcessParameter. */
+             svc::CreateProcessParameter param;
+             R_TRY(GetCreateProcessParameter(std::addressof(param), meta, flags, resource_limit));
++            R_TRY(ApplyFextendoMemoryDescriptor(std::addressof(param)));
+ 
+             /* Decide on an NSO layout. */
+             R_TRY(DecideAddressSpaceLayout(out, std::addressof(param), nso_headers, has_nso, argument));

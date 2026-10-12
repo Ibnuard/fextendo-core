@@ -1,0 +1,39 @@
+{
+  "version": "1.3.0",
+  "atmosphere": "1.9.5",
+  "revision": "de9b02007bbfc62f2f9ee2abf4a96bc337f5f86a",
+  "abi": "fxtmem-v1",
+  "extension": "fxtauto-v1",
+  "reference_hos": "20.5.0",
+  "hoc": "2.5.1",
+  "hoc_port": true,
+  "hoc_configuration": "official-release-default",
+  "hardware_tested": false,
+  "title_id_allowlist": null,
+  "stock_hoc_symbols": false,
+  "hoc_settings_bytes": 26824,
+  "hoc_settings_output_offset": 287804,
+  "hoc_settings_sha256": "7f2ecdbb11bd27cedd1c49d2086cd006cab18087f945272178292254bdbfdf3f",
+  "builder_sha256": "93224789b56ea839168fb08f73800204a3afe590851c88a5169d03908144fb5f",
+  "libnx_revision": "7644c9b26099aa2d2145bc72a21ee24190e92085",
+  "compiler_compat_flags": "-Wno-error=unused-but-set-variable -Wno-error=array-bounds",
+  "libnx_archive_sha256": "ce670c2ec2f5353f641a45c3fbad9e7df4e4df30c303fe625b1ecdf0c5efa082",
+  "files": {
+    "mesosphere.bin": "b2e66fe90ab2c581ca52da3437d4ea2c22bf5df9d41911958767442639af6b9e",
+    "loader-stock.kip": "48b0250439b3cf460faa625fa2a402d521f84730fed7ff002c497ffb8d4120bc",
+    "loader-hoc.kip": "d89897f377bfd56315248f70fa6ff87f4d73695d9562f8568aec8f3a99e59a83"
+  },
+  "patches": {
+    "atmosphere-1.9.5-standard.patch": "ddd83a5952f21c6f12ec745e414b74a01864e2fd996c2be0998a281f227a2a9b",
+    "atmosphere-1.9.5-hoc.patch": "8a2e3e1188f51ae67eba1ad63920b1eae996edc084331653429c6183d12ae8ee"
+  },
+  "host_validation": {
+    "passed": true,
+    "evidence_sha256": "1e0fac6ced5083f3d4718f4800935270bad8d0c178d912c168159e06efb1b5d7",
+    "harnesses": {
+      "auto-host.cpp": "b2f4dcfeafe4162540d2bf025799737b57db4a52fb5bda20a41639320cfd8716",
+      "layout-host.cpp": "12d2375aeef6f9e852cb6fc9e6bba259f7e182b7d99c6e1ecbc1ba767de9b3d2"
+    },
+    "checker_sha256": "7ff148e074b69d17a677495f34c0decd1a6898ba58a4582f82b6f23e5d033b24"
+  }
+}

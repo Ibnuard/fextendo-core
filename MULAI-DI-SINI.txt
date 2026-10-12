@@ -1,20 +1,28 @@
-FEXTendo Patch 1.1.0
+FEXTendo Patch 1.2.0
 
 1. Salin folder switch dari paket ini ke root microSD.
 2. Buka FEXTendo Patch melalui hbmenu.
 3. Pastikan status Ready to install, pilih Install patch, lalu konfirmasi.
 4. Setelah selesai, reboot ke Hekate > More configs > FEXTendo Patch (emuMMC).
 
-Paket bawaan: Atmosphere 1.11.2 / revisi 5388824b, HOC 2.5.1 default resmi.
+Satu NRO, paket dipilih otomatis:
+- Atmosphere 1.11.2 / revisi 5388824b: paket lama 1.1.0 tetap sama.
+- Atmosphere 1.12.0 / revisi 28d6a2e1: port baru 1.2.0, perlu tes di Switch.
+Keduanya memakai HOC 2.5.1 dengan blok pengaturan default resmi yang sama.
 Versi Atmosphere lain akan ditolak sampai tersedia paket yang cocok.
+Versi FW/HOS berbeda dari versi Atmosphere. FW 17-23 bukan pembatas tunggal
+installer, tetapi belum semua kombinasi FW/model/HOC diuji di perangkat.
 Installed berarti berkas sudah terpasang; aktivasi kernel baru perlu reboot.
 NRO installer ini tidak memerlukan forwarder low-memory khusus.
+Setelah update Atmosphere: boot CFW biasa dulu, buka NRO ini, lalu pasang
+paket yang cocok sebelum boot ulang melalui entry FEXTendo Patch.
 
-Pembaruan ini menambahkan deteksi otomatis fxtauto-v1 pada loader.
+Pembaruan ini memperluas deteksi otomatis fxtauto-v1 ke Atmosphere 1.12.0.
 Dengan NSP game yang mendukungnya: tanpa patch tetap mode 32-bit no-alias;
-setelah boot patch 1.1.0 menjadi mode 39-bit low-window, memakai NSP yang sama.
-NSP fxtmem-v1 lama tetap didukung. Kernel dan setting resmi HOC tidak berubah.
-Jalur otomatis baru sudah dites host, tetapi tetap perlu validasi di Switch.
+setelah boot salah satu paket menjadi mode 39-bit low-window, NSP tetap sama.
+NSP fxtmem-v1 lama tetap didukung. Paket 1.11.2 tidak berubah.
+Kernel/loader 1.12.0 dibangun ulang; ini port FEXTendo, bukan rilis HOC resmi.
+Tes host tidak menggantikan validasi boot dan gameplay pada Switch.
 
 Kontrol: A pilih, B kembali/batal, + keluar, X bantuan. Touch juga tersedia.
 Jika instalasi terputus, buka lagi aplikasi dan pilih Recover installation.

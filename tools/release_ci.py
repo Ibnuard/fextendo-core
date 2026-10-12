@@ -142,20 +142,23 @@ def publish(directory):
     if latest:
         require(semver(meta['version']) > semver(latest['tag_name'].removeprefix('v')), 'Refusing to replace latest with an older version.')
     notes = directory.parent/'release-notes.md'
+    catalog = json.loads((directory/'fextendo-patch.json').read_text())
+    supported = ', '.join('**'+b['atmosphere']+' / '+b['revision']+'**' for b in catalog['bundles'])
     notes.write_text(
         f'FEXTendo Patch {tag}\n\n'
         'Download **FEXTendo-Patch.nro** and copy it to `SD:/switch/fextendo-patch/`. '
         'Check update uses this repository automatically.\n\n'
-        'The bundled boot patch supports Atmosphere **1.11.2 / 5388824b**, with '
+        f'The bundled boot pairs match Atmosphere {supported}, with '
         'HOC **2.5.1 official defaults**. Install it, then reboot through '
         '**Hekate > More configs > FEXTendo Patch (emuMMC)**. Other Atmosphere '
         'versions require a matching bundle.\n\n'
         'The fxtauto-v1 loader supports one compatible game NSP: ordinary boot '
         'uses 32-bit no-alias; the patched boot selects 39-bit low-window. '
         'Existing fxtmem-v1 forwarders remain supported.\n\n'
-        'Host tests and NRO/package validation passed. The new automatic loader '
-        'still needs Switch validation; earlier kernel probe results do not '
-        'certify this new path. No game data is included.\n\n'
+        'Host tests and NRO/package validation passed. The 1.11.2 payloads are unchanged; '
+        'the new 1.12.0 kernel/HOC loader port still needs Switch boot and gameplay validation. '
+        'HOS firmware numbers are separate from Atmosphere versions; not all FW 17-23 '
+        'combinations have been tested on hardware. No game data is included.\n\n'
         f'Source commit: `{head}`. Raw catalog/kernel/loader assets are used by '
         'the installer; source and SHA256SUMS are provided alongside the NRO.\n')
     if remote is None:

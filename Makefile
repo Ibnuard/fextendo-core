@@ -1,6 +1,6 @@
 export APP_TITLE := FEXTendo Patch
 export APP_AUTHOR := FEXTendo
-export APP_VERSION := 1.1.0
+export APP_VERSION := 1.2.0
 ICON := assets/icon.jpg
 #---------------------------------------------------------------------------------
 .SUFFIXES:
@@ -193,6 +193,9 @@ all	:	$(OUTPUT).nro
 
 ifeq ($(strip $(NO_NACP)),)
 $(OUTPUT).nro	:	$(OUTPUT).elf $(OUTPUT).nacp
+# Rebuild version metadata and embedded bundles during incremental local builds.
+$(OUTPUT).nacp : $(TOPDIR)/Makefile
+$(OUTPUT).nro : $(wildcard $(TOPDIR)/romfs/* $(TOPDIR)/romfs/*/*) $(TOPDIR)/assets/icon.jpg
 else
 $(OUTPUT).nro	:	$(OUTPUT).elf
 endif

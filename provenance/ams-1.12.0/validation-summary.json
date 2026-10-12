@@ -1,0 +1,9 @@
+{
+  "installer_release_tests": 28,
+  "result": "PASS",
+  "memory_flag_combinations": 262144,
+  "memory_source_checks": "PASS",
+  "legacy_1112_bundle": "byte-identical",
+  "new_1120_hardware_validation": "pending",
+  "branch": "compat/atmosphere-1.12"
+}

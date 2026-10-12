@@ -1,0 +1,74 @@
+{
+  "version": "1.2.0",
+  "abi": "fxtmem-v1",
+  "extension": "fxtauto-v1",
+  "atmosphere": "1.12.0",
+  "revision": "28d6a2e11f2640077bbb8a9fbd463d3fa12b6984",
+  "hoc": "2.5.1",
+  "hoc_port": true,
+  "hoc_configuration": "official-release-default",
+  "hardware_tested": false,
+  "reference_hos": "23.0.0",
+  "title_id_allowlist": null,
+  "hoc_settings_sha256": "7f2ecdbb11bd27cedd1c49d2086cd006cab18087f945272178292254bdbfdf3f",
+  "hoc_settings_bytes": 26824,
+  "hoc_settings_output_offset": 389596,
+  "prepared": {
+    "revision": "28d6a2e11f2640077bbb8a9fbd463d3fa12b6984",
+    "builder_sha256": "e4ad59048c1f7f893a4c42307dd66460613e2effcd86e4ca1a2cacd1c37b2183",
+    "patch_sha256": "7f07c3803d1f94bd359887c98f9ad285c03d39e0afa51101ed23c21e743f4ec5",
+    "files": {
+      "libraries/libmesosphere/source/kern_k_page_table_base.cpp": "bef9ef4dfe02211c43da16ed6bb9f45ad26aca20371178b6cc243d633f858033",
+      "libraries/libmesosphere/source/svc/kern_svc_process.cpp": "e9a13c88b6fe252416e60048339ea5e67f2871de21d15f4d11c814f8634a5676",
+      "libraries/libvapours/include/vapours/svc/svc_fextendo_memory.hpp": "0fdc74d9edb1d6878d3693e311aa8f427f715f3d7eafe1658788df76d1e161ba",
+      "libraries/libvapours/include/vapours/svc/svc_types_common.hpp": "6d18e838bc12f808fb7d11a48a08eab423845a2c9949c614f20219a433df5d33",
+      "stratosphere/loader/loader.json": "e682a71c25c4f4aa370c2cbd89198956fce606b3915c665a8a5faa070fe49842",
+      "stratosphere/loader/source/ldr_fextendo_memory.inc": "32f174ce7fa4c0b8d7e9103a6ec5de8eab14096fccc1f53ef195918a6c79382b",
+      "stratosphere/loader/source/ldr_process_creation.cpp": "6f6041b2bf4c58bdedd7b402e445a65953bf8558a50db9e91d3d2ce594e79e67",
+      "stratosphere/loader/source/oc/customize.cpp": "5b2f8188b53759893725bdefee3fd9cd754cc78ecf96606b0c79a9ebdc832c15",
+      "stratosphere/loader/source/oc/customize.hpp": "fade2f1eeb240799f74d49c789ae05b93041c89de7d4c7afe036b95d8726315e",
+      "stratosphere/loader/source/oc/erista/calculate_timings_erista.cpp": "0b82ad112f4e2348fff6b4204b02d28948c2a5d45168585d0ec6205dfd57b2bd",
+      "stratosphere/loader/source/oc/erista/calculate_timings_erista.hpp": "70ae1a29c7d7e5813699c376a1eccc18d398f8d63f4274ae94134ac30ae8ba78",
+      "stratosphere/loader/source/oc/mariko/calculate_timings.cpp": "8af61df58efe09b177b029458335a07b2f4805e38a39c7a0fa9c839dfafc2d98",
+      "stratosphere/loader/source/oc/mariko/calculate_timings.hpp": "eb9bb289c6c66d76139f1acb789a2f250bf0c13ba97806c2711052229ce365da",
+      "stratosphere/loader/source/oc/mariko/timing_tables.cpp": "c4bbe06ceb84b3a4288a115d61612f715472f81d8b56dfec73266226efccb992",
+      "stratosphere/loader/source/oc/mariko/timing_tables.hpp": "3cc362f5e906e2fb04bab70dfa6226876b34db80dcb73476307a194e8c4991a1",
+      "stratosphere/loader/source/oc/mtc_timing_table.hpp": "b394d13c588a07685ee11a011308115c9cdd7b258565e038889861ab7a67448e",
+      "stratosphere/loader/source/oc/mtc_timing_value.hpp": "f4cf1454103c5e5f2b0a18b470061ae0d5b886ac5c0642c7871e2897a2402ccd",
+      "stratosphere/loader/source/oc/oc_common.hpp": "70e954b9572e9a680fcd819e40d2b453efe2bb846ef2cd065e85574eb90bbf8e",
+      "stratosphere/loader/source/oc/oc_loader.hpp": "dfbcb7221b11e2dc63e05713d60e8400eac31de4f17cbc528a80ef9353d191f6",
+      "stratosphere/loader/source/oc/oc_log.cpp": "d59ed1276b1d2053e5aa8388372c0cf5f00ae26731b330f6232201e76b1b13f0",
+      "stratosphere/loader/source/oc/oc_log.hpp": "ddefb2937686cefd3328b07935f890b4cf01d165dc80a849045c429a6c357345",
+      "stratosphere/loader/source/oc/pcv/pcv.cpp": "fd33eee5ced822729fec765aace232dd8e61f0e057c40140780fd496ebdec716",
+      "stratosphere/loader/source/oc/pcv/pcv.hpp": "596e6e2bcf1c8ff8b7c23ff2fc1e99bcafaa5ab409c8d42263deaca30bd09976",
+      "stratosphere/loader/source/oc/pcv/pcv_asm.hpp": "1cfbd59e3c40c5e3d50e0da0a4ff4f09a64cb1af493c2582b3ac092fbbb33c99",
+      "stratosphere/loader/source/oc/pcv/pcv_common.hpp": "0d878b8de284531d80548558c4942032f085b885c27be84e85cfd7f80cd81e57",
+      "stratosphere/loader/source/oc/pcv/pcv_erista.cpp": "71a8ad1d73f8801da571adb22d454fd5d7136860b5f3cac6f3452472548a06f5",
+      "stratosphere/loader/source/oc/pcv/pcv_erista.hpp": "26822a18c307970b46802f3ace28521dd815ffc0bf7be594b0a0e4c3c6bacb01",
+      "stratosphere/loader/source/oc/pcv/pcv_mariko.cpp": "62f220fee06f09708a2430bba71ba89b7fe5ae62dac086379d342422ab895fc9",
+      "stratosphere/loader/source/oc/pcv/pcv_mariko.hpp": "8f1f7e1b6b3d5ab290f35276235eac0ac00b0303627a141bad22b0c28d4543b1",
+      "stratosphere/loader/source/oc/ptm/ptm.cpp": "b68ca184d63fa67713ae564dfbfcdddb3d057a411961ff7ef1567813081a0cfd",
+      "stratosphere/loader/source/oc/ptm/ptm.hpp": "fcef006e8f270beeadb8083084bc0bb78d10db00be12dedb7190270e9b4a9635"
+    }
+  },
+  "build_builder_sha256": "83be8097d7c4974a526543e84803c116b4d1ed4ed99ecaabe2617efc375870f5",
+  "libnx_revision": "feebd026ca0f5dcc2119f46ad8e0d16ad3dd4973",
+  "libnx_archive_sha256": "a924e690ceed3f4ba7897d5b15d000a8b5e46c6dc64c555a3f5baac7be82351f",
+  "files": {
+    "mesosphere.bin": "f46c6f20cd66a229a4746481b09968a1a14e5784e658dd4f42fe0ecb8976c92c",
+    "loader-hoc.kip": "b61f93225ca36355fc55ae4deaf3f577f77ad0bb7c07a0a382762ca54df32b56"
+  },
+  "elfs": {
+    "kernel": "56595580dd68d125c9a2522ec1ce1290bd6946254df2f99fcfe0c6edbe2418dd",
+    "loader": "b4d9128d9c57fbe2dd74a8ade12e8aedae85c61bfb14c0603c5ea97082e61a74"
+  },
+  "host_validation": {
+    "passed": true,
+    "evidence_sha256": "404de2675e5dd1edbb635471d4346e97aa666e482f8526f0a5d28dbe57f058b1",
+    "harnesses": {
+      "auto-host.cpp": "071e5016f1e252b342b7e5cd9789e4409549b672e30953b53027a6ec01f4b887",
+      "layout-host.cpp": "61ec0cc4a97c37c44620c5d89474324d5ac9744f45f7a23c63f26fd00398ca55"
+    },
+    "checker_sha256": "b94b2fddf06e89715ce825718a750001c1c1f35ab716f780cfad2be28b48d0d0"
+  }
+}

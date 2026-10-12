@@ -38,6 +38,8 @@ Required patch assets:
 fextendo-patch.json
 mesosphere-1.11.2.bin
 loader-hoc-1.11.2-auto-v1.1.0.kip
+mesosphere-1.12.0.bin
+loader-hoc-1.12.0-auto-v1.2.0.kip
 ```
 
 For bundle 1.1.0, the loader asset is
@@ -46,10 +48,13 @@ do not replace a published immutable asset in place. Its provenance and source
 patches are in `provenance/memory-auto-v1.1.0`. The kernel remains the verified v1
 binary. The new automatic selection is not covered by the old device-probe PASS.
 
-To import a freshly built automatic loader locally, run
+For the historical 1.11.2-only automatic-loader import, run
 `python3 tools/import_auto_loader.py /path/to/verified/build`, then `prepare.py`
 and the normal tests/build. Import validates the pair, source hashes, official
 HOC settings and identical kernel. This does not modify any mounted SD card.
+Do not run that historical importer over the multi-version catalog. For 1.12.0,
+use `build_ams112.py`, `check_ams112.py`, then `import_ams112.py`; see
+[compatibility](COMPATIBILITY.md). That import retains the complete 1.11.2 bundle.
 
 Also distribute `FEXTendo-Patch.nro`, `FEXTendo-Patch-source.tar.gz`,
 `SHA256SUMS.txt`, `build-receipt.json`, `toolchain.txt`, and the README.
@@ -63,7 +68,7 @@ an archive in place of a kernel or loader: the NRO downloads these exact raw ass
 `fextendo-patch`, ABI `fxtmem-v1`, and `min_app_version`. Each bundle declares:
 
 - patch version, exact Atmosphere semantic version and eight-digit source revision;
-- HOC version, `hoc_configuration=official-release-default`, reference tested HOS;
+- HOC version, `hoc_configuration=official-release-default`, reference HOS (`tested_hos` is a legacy field name, not a tested firmware range);
 - kernel and loader asset name, byte length and SHA-256.
 
 Adding a new Atmosphere version means **rebuilding and testing its matching
@@ -93,7 +98,7 @@ Atmosphere upgrade, HOC global overwrite or per-game runtime replacement occurs.
 Host tests cover logic and interrupted writes, but the following still need a
 Switch test before describing the new installer as production-validated:
 
-1. Open the NRO in hbmenu on Atmosphere 1.11.2. Check running/SD versions.
+1. Open the NRO in hbmenu on each supported Atmosphere build. Check running/SD versions and the selected bundle.
 2. Install, reopen the app, confirm `Patch installed`, boot the new Hekate entry.
 3. Run existing CONTROL/OPTIN memory probes and a descriptor-bearing game.
 4. Check handheld Joy-Con, Pro Controller, touch and HOME behavior during work.

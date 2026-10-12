@@ -89,12 +89,44 @@ class Installer(Fixtures):
         new=snapshot(self.sd/'atmosphere/fextendo/patch')
         for name,digest in payloads.items():self.assertEqual(new[name],digest)
     def test_future_atmosphere_requires_a_matching_catalog(self):
-        # Synthetic host fixture only, not a claim that these binaries support 1.12.0.
-        p=self.sd/'atmosphere/package3';data=bytearray(p.read_bytes());data[57]=0;data[58]=12;p.write_bytes(data)
-        env={'FXP_RUNNING_AMS':'1.12.0'};self.assertFalse(self.status(env=env)['supported'])
-        c=json.loads((ROMFS/'catalog.json').read_text());c['bundles'][0]['atmosphere']='1.12.0'
+        # Synthetic fixture: not a claim that these binaries support 1.13.0.
+        p=self.sd/'atmosphere/package3';data=bytearray(p.read_bytes());data[57]=0;data[58]=13;p.write_bytes(data)
+        env={'FXP_RUNNING_AMS':'1.13.0'};self.assertFalse(self.status(env=env)['supported'])
+        c=json.loads((ROMFS/'catalog.json').read_text());c['bundles'][0]['atmosphere']='1.13.0'
         path=self.base/'future.json';path.write_text(json.dumps(c));self.run_driver('install-catalog',path,env=env)
         self.assertTrue(self.status(env=env)['installed'])
+    def test_112_chooses_new_pair_and_rejects_foreign_revision(self):
+        p=self.sd/'atmosphere/package3';data=bytearray(p.read_bytes())
+        data[57:60]=bytes([0,12,1]);struct.pack_into('<I',data,60,0x28d6a2e1);p.write_bytes(data)
+        env={'FXP_RUNNING_AMS':'1.12.0','FXP_RUNNING_HOS':'23.0.0'}
+        s=self.status(env=env);self.assertTrue(s['ready']);self.assertEqual(s['bundle'],'1.2.0')
+        self.assertEqual(s['kernel'],'mesosphere-1.12.0.bin')
+        self.assertEqual(s['loader'],'loader-hoc-1.12.0-auto-v1.2.0.kip')
+        self.run_driver('install',env=env);self.assertTrue(self.status(env=env)['installed'])
+        catalog=json.loads((ROMFS/'catalog.json').read_text());bundle=next(b for b in catalog['bundles'] if b['atmosphere']=='1.12.0')
+        for kind,name in [('kernel','mesosphere.bin'),('loader','loader.kip')]:
+            installed=next(self.sd.glob('atmosphere/fextendo/patch/*/'+name))
+            self.assertEqual(hashlib.sha256(installed.read_bytes()).hexdigest(),bundle[kind]['sha256'])
+        struct.pack_into('<I',data,60,0x5388824b);p.write_bytes(data)
+        before=snapshot(self.sd);self.assertFalse(self.status(env=env)['supported'])
+        self.assertNotEqual(self.run_driver('install',env=env,ok=False).returncode,0);self.assertEqual(before,snapshot(self.sd))
+    def test_firmware_display_is_not_an_atmosphere_version_gate(self):
+        # Selection test only: hardware compatibility must be validated separately.
+        for version,rev in [('1.11.2',0x5388824b),('1.12.0',0x28d6a2e1)]:
+            p=self.sd/'atmosphere/package3';data=bytearray(p.read_bytes())
+            data[57:60]=bytes(reversed(list(map(int,version.split('.')))))
+            struct.pack_into('<I',data,60,rev);p.write_bytes(data)
+            for hos in ['17.0.0','18.0.0','19.0.1','20.0.0','21.0.0','22.5.0','23.0.0']:
+                s=self.status(env={'FXP_RUNNING_AMS':version,'FXP_RUNNING_HOS':hos})
+                self.assertTrue(s['ready']);self.assertEqual(s['hos'],hos)
+    def test_1112_bundle_and_files_remain_immutable(self):
+        catalog=json.loads((ROMFS/'catalog.json').read_text())
+        old=next(b for b in catalog['bundles'] if b['atmosphere']=='1.11.2')
+        self.assertEqual(old['version'],'1.1.0')
+        for kind,digest in [('kernel','29ac80dcc6b7c909243dac1f7b1272e4eeb44882410c8c8032f7b9671a5f1d26'),
+                            ('loader','aead8e1451db65572f8ca7b0e9971fed6206031b8533126cc6e2f63deaf99eb7')]:
+            self.assertEqual(old[kind]['sha256'],digest)
+            self.assertEqual(hashlib.sha256((ROMFS/'boot'/old[kind]['asset']).read_bytes()).hexdigest(),digest)
     def test_symlink_parent_is_refused(self):
         outside=self.base/'outside';outside.mkdir();(self.sd/'atmosphere/fextendo').symlink_to(outside,target_is_directory=True)
         self.assertNotEqual(self.run_driver('install',ok=False).returncode,0);self.assertEqual(list(outside.iterdir()),[])

@@ -1,6 +1,6 @@
 """Render UI states using the very same software renderer as the Switch NRO."""
 from pathlib import Path
-import importlib.util, subprocess, tempfile
+import importlib.util, subprocess, tempfile, os, struct
 try:
     from PIL import Image
 except ImportError:
@@ -11,11 +11,11 @@ module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 out=ROOT/'build-host/previews';out.mkdir(parents=True,exist_ok=True)
 with tempfile.TemporaryDirectory() as tmp:
     sd=Path(tmp);module.fixture(sd)
-    def draw(name, mode=''):
+    def draw(name, mode='', env=None):
         p=out/(name+'.ppm')
         args=[str(ROOT/'build-host/driver'),'render',str(sd),str(ROOT/'romfs'),str(p)]
         if mode:args.append(mode)
-        subprocess.run(args,check=True)
+        subprocess.run(args,check=True,env={**os.environ,**(env or {})})
         if Image:
             Image.open(p).save(p.with_suffix('.png'));p.unlink()
     draw('ready');draw('confirmation','confirm');draw('progress','progress');draw('update-unconfigured','error')
@@ -23,4 +23,6 @@ with tempfile.TemporaryDirectory() as tmp:
     draw('installed')
     pkg=sd/'atmosphere/package3';data=bytearray(pkg.read_bytes());data[58]=12;pkg.write_bytes(data)
     draw('unsupported')
+    data[57:60]=bytes([0,12,1]);struct.pack_into('<I',data,60,0x28d6a2e1);pkg.write_bytes(data)
+    draw('ready-1.12.0',env={'FXP_RUNNING_AMS':'1.12.0','FXP_RUNNING_HOS':'23.0.0'})
 print(out)

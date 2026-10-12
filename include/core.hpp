@@ -9,7 +9,7 @@
 namespace fxp {
 using Bytes = std::vector<uint8_t>;
 using Json = nlohmann::json;
-constexpr const char* AppVersion = "1.1.0";
+constexpr const char* AppVersion = "1.2.0";
 constexpr const char* StateDir = "switch/fextendo-patch";
 constexpr const char* EntryPath = "bootloader/ini/fextendo-patch.ini";
 struct Asset { std::string name, hash, url; uint64_t size=0; };

@@ -7,7 +7,7 @@ Download the NRO from **[Releases](https://github.com/Ibnuard/fextendo-core/rele
 The app name remains **FEXTendo Patch**.
 
 A standalone Nintendo Switch homebrew installer for **FEXTendo Memory ABI v1**.
-One NRO contains the UI and the verified offline kernel/loader pair. No game,
+One NRO contains the UI and multiple verified offline kernel/loader pairs. No game,
 Wine prefix, NSP or forwarder is included. This project is independent of PES13.
 
 ## Use
@@ -23,14 +23,31 @@ and **X** for help. Long operations run on a worker while the UI remains respons
 3. After installation, reboot to **Hekate > More configs > FEXTendo Patch (emuMMC)**.
    Nyx's **All configs** home-screen option can put this entry with other entries.
 
-The bundled pair is **Atmosphere 1.11.2 / 5388824b**, **HOC 2.5.1 official defaults**,
-patch version **1.1.0**. The kernel is byte-identical to the earlier successful
-CONTROL, OPTIN-A and OPTIN-B device probes. The updated loader adds `fxtauto-v1`
-and still accepts existing `fxtmem-v1` forwarders. Official HOC settings are
-unchanged. Reference HOS: **22.5.0**. The new loader/installer still require
-on-console validation; the older probe results do not certify this new path.
+The installer selects the matching pair automatically; users do not choose a KIP.
+
+| Atmosphere / package3 revision | Bundle | HOS reference | Validation |
+| --- | --- | --- | --- |
+| 1.11.2 / 5388824b | 1.1.0 | 22.5.0 | Existing distributed kernel and loader, byte-identical |
+| 1.12.0 / 28d6a2e1 | 1.2.0 | 23.0.0 | New source port; Switch boot/gameplay test pending |
+
+Both bundles retain **HOC 2.5.1 official defaults**, `fxtauto-v1` and `fxtmem-v1`.
+The 1.12.0 pair retains that version's upstream kernel/loader changes and ports
+the reviewed HOC OC code onto it. This is a FEXTendo integration, not an official
+HOC release or a claim of tested HOC compatibility with every firmware.
+
+**Switch firmware (HOS) and Atmosphere are different versions.** A user on FW 17,
+18, etc. is not rejected merely because the reference firmware is newer. The
+installer matches Atmosphere and package3; it does not impose a single HOS version.
+Users on older Atmosphere must update Atmosphere/Hekate to a supported combination
+or wait for a separately built bundle. The HOS references above (the legacy
+catalog key is `tested_hos`) are not a device-tested firmware compatibility range.
+See [compatibility and test details](docs/COMPATIBILITY.md).
+
 An unsupported Atmosphere build is blocked, not substituted with a different pair.
 An enabled emuMMC and a Hekate/Nyx version supporting the console's HOS are required.
+
+After updating Atmosphere, boot your ordinary CFW entry first, reopen this NRO,
+and install the pair matching the new version before using the patched entry again.
 
 **Installed** means the files and entry match their hashes. It is not proof that
 the currently running kernel has the patch. The initial boot into the new entry
@@ -39,7 +56,7 @@ folders and Wine profiles; no per-game Title ID kernel list is used.
 
 An adaptive game NSP can now default to **32-bit no-alias** on ordinary
 Atmosphere or FEXTendo Patch 1.0.0, and automatically receive **39-bit low-window**
-on this 1.1.0 boot. It declares the optional `/fxtauto` ExeFS descriptor. The
+on either bundled patched boot. It declares the optional `/fxtauto` ExeFS descriptor. The
 loader selects the mode before ASLR and process creation; the game does not
 change address width while running. Installing this update requires one reboot
 through the patched entry, not a different NSP or kernel for each game.
@@ -120,7 +137,7 @@ python3 tools/release.py
 ```
 
 Generated NRO: `FEXTendo-Patch.nro`. Copy-ready distribution:
-`dist/FEXTendo-Patch-v1.1.0/`. Local distribution is a folder, not a ZIP.
+`dist/FEXTendo-Patch-v1.2.0/`. Local distribution is a folder, not a ZIP.
 `dist/release-assets/` contains the raw files used by GitHub Releases and the updater.
 The pipeline runs host tests, builds the NRO and uploads artifacts on each PR or
 push to `main`. A new app version on `main` publishes a stable `vX.Y.Z` release

@@ -12,6 +12,7 @@ int main(int argc,char** argv){
         auto catalog=loadCatalog(romfs);Environment env{"1.11.2","22.5.0",true};
         if(command=="install-catalog"){require(argc==5,"catalog file required");catalog=parseCatalog(readText(argv[4]));command="install";}
         if(const char* v=getenv("FXP_RUNNING_AMS")){env.atmosphere=v;env.atmosphereKnown=env.atmosphere!="unknown";}
+        if(const char* v=getenv("FXP_RUNNING_HOS"))env.hos=v;
         if(command=="catalog"){
             require(argc==5,"catalog file required");auto c=parseCatalog(readText(argv[4]));std::cout<<c.bundles.size()<<"\n";
         }else if(command=="release"){
@@ -38,7 +39,7 @@ int main(int argc,char** argv){
             Ui ui(romfs);std::vector<uint32_t> pixels(1280*720);ui.draw(pixels.data(),1280,v);
             FILE* f=fopen(argv[4],"wb");require(f!=nullptr,"Cannot write preview");fprintf(f,"P6\n1280 720\n255\n");for(auto c:pixels){unsigned char p[]={uint8_t(c),uint8_t(c>>8),uint8_t(c>>16)};fwrite(p,1,3,f);}fclose(f);
         }else if(command=="status"){
-            auto s=inspect(root,env,catalog);std::cout<<Json{{"ready",s.ready},{"supported",s.supported},{"installed",s.installed},{"recovery",s.recovery},{"headline",s.headline},{"detail",s.detail},{"running",s.running},{"disk",s.disk}}.dump()<<"\n";
+            auto s=inspect(root,env,catalog);std::cout<<Json{{"ready",s.ready},{"supported",s.supported},{"installed",s.installed},{"recovery",s.recovery},{"headline",s.headline},{"detail",s.detail},{"running",s.running},{"disk",s.disk},{"bundle",s.bundle.version},{"kernel",s.bundle.kernel.name},{"loader",s.bundle.loader.name},{"hos",s.hos}}.dump()<<"\n";
         }else require(false,"Unknown command");
         return 0;
     }catch(const std::exception& e){std::cerr<<e.what()<<"\n";return 1;}

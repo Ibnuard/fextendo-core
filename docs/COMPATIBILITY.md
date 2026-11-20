@@ -9,6 +9,7 @@ Supported versions and the source revisions used to build their payloads:
 - Atmosphere 1.9.5, `de9b0200`: new kernel and Standard/HOC 1.3.0 bundles from that upstream version; device validation pending.
 - Atmosphere 1.11.2, `5388824b`: HOC bundle 1.1.0 is unchanged; Standard 1.3.0 reuses the sealed Standard loader.
 - Atmosphere 1.12.0, `28d6a2e1`: HOC bundle 1.2.0 is unchanged; Standard 1.3.0 excludes all HOC hooks, sources and added capabilities.
+- Atmosphere 1.12.2, `05fa6e60`: new kernel and Standard/HOC 1.3.0 bundles supporting HOS 23.5.0; official HOC 2.6.1 defaults.
 
 Standard is the default for a fresh installation and requires no HOC. Users may
 keep using sys-clk with their existing settings. HOC is an explicit alternative.

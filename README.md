@@ -33,12 +33,13 @@ choosing the other loader replaces only the managed FEXTendo entry after verific
 
 | Atmosphere / source revision | Standard bundle | HOC bundle | HOS reference |
 | --- | --- | --- | --- |
-| 1.9.5 / de9b0200 | 1.3.0 | 1.3.0 | 20.5.0 |
-| 1.11.2 / 5388824b | 1.3.0 | 1.1.0 (unchanged) | 22.5.0 |
-| 1.12.0 / 28d6a2e1 | 1.3.0 | 1.2.0 (unchanged) | 23.0.0 |
+| 1.9.5 / de9b0200 | 1.3.0 | 1.3.0 (HOC 2.5.1) | 20.5.0 |
+| 1.11.2 / 5388824b | 1.3.0 | 1.1.0 (HOC 2.5.1) | 22.5.0 |
+| 1.12.0 / 28d6a2e1 | 1.3.0 | 1.2.0 (HOC 2.5.1) | 23.0.0 |
+| 1.12.2 / 05fa6e60 | 1.3.0 | 1.3.0 (HOC 2.6.1) | 23.5.0 |
 
 Both loader options support `fxtauto-v1` and `fxtmem-v1`. Only HOC bundles include
-**HOC 2.5.1 official defaults**. The 1.12.0 HOC pair retains that version's upstream kernel/loader changes and ports
+**HOC official defaults** (HOC 2.5.1 for legacy versions; HOC 2.6.1 for Atmosphere 1.12.2). The 1.12.2 HOC pair retains that version's upstream kernel/loader changes and ports
 the reviewed HOC OC code onto it. This is a FEXTendo integration, not an official
 HOC release or a claim of tested HOC compatibility with every firmware.
 

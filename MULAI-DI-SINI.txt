@@ -15,7 +15,7 @@ revisi berbeda tidak lagi langsung memblokir versi yang didukung.
 Versi Atmosphere lain tetap memerlukan paket tersendiri.
 FW/HOS berbeda dari versi Atmosphere; seluruh kombinasi belum diuji di perangkat.
 
-HOC tetap opsional, memakai default resmi 2.5.1 di entry FEXTendo saja.
+HOC tetap opsional, memakai default resmi (2.5.1 untuk versi lama, 2.6.1 untuk 1.12.2) di entry FEXTendo saja.
 Standard mempertahankan dukungan fxtmem-v1/fxtauto-v1 tanpa kode HOC.
 Kernel dan loader HOC lama tidak diubah. Paket 1.9.5 dan Standard 1.12.0 perlu tes boot/gameplay.
 Installed berarti berkas terpasang; aktivasi memerlukan reboot.

@@ -137,7 +137,7 @@
     },
     {
       "atmosphere": "1.12.2",
-      "hoc": "2.5.1",
+      "hoc": "2.6.1",
       "hoc_configuration": "official-release-default",
       "kernel": {
         "asset": "mesosphere-1.12.2.bin",

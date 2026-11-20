@@ -9,7 +9,7 @@ FEXTendo Patch 1.3.0
 4. Pilih Install patch, lalu konfirmasi.
 5. Reboot ke Hekate > More configs > FEXTendo Patch (emuMMC).
 
-Atmosphere yang tersedia: 1.9.5, 1.11.2 dan 1.12.0, masing-masing Standard dan HOC.
+Atmosphere yang tersedia: 1.9.5, 1.11.2, 1.12.0 dan 1.12.2, masing-masing Standard dan HOC.
 Versi Atmosphere aktif dan package3 di SD harus sama. Revisi commit ditampilkan;
 revisi berbeda tidak lagi langsung memblokir versi yang didukung.
 Versi Atmosphere lain tetap memerlukan paket tersendiri.

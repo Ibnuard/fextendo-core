@@ -54,7 +54,7 @@ def metadata():
             require(re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]*', asset['asset']), 'Unsafe asset name.')
             path = ROOT/'romfs/boot'/asset['asset']
             require(path.stat().st_size == asset['bytes'] and sha(path) == asset['sha256'], 'Boot payload differs from catalog: '+asset['asset'])
-    require(identities=={(ams,kind) for ams in ('1.9.5','1.11.2','1.12.0') for kind in ('stock','hoc')}, 'Both Standard and HOC bundles must be packaged.')
+    require(identities=={(ams,kind) for ams in ('1.9.5','1.11.2','1.12.0','1.12.2') for kind in ('stock','hoc')}, 'Both Standard and HOC bundles must be packaged.')
     return {'version': version, 'tag': 'v'+version}
 
 
